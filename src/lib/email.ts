@@ -2,7 +2,7 @@
 // Docs: https://resend.com/docs/api-reference/emails/send-email
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
-const FROM_ADDRESS   = 'CueCadence <hello@cuecadence.io>';
+const FROM_ADDRESS   = 'CueCadence <hello@cloudflash.com>';
 
 async function sendEmail(
   apiKey: string,

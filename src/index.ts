@@ -2,7 +2,7 @@ import type { Env } from './types/index.js';
 import { handleOptions, jsonResponse } from './lib/cors.js';
 
 // Route handlers — implement these one at a time per TODO.md
-// import { handleRequestTrial } from './routes/requestTrial.js';
+import { handleRequestTrial } from './routes/requestTrial.js';
 // import { handleVerify }       from './routes/verify.js';
 // import { handleActivate }     from './routes/activate.js';
 // import { handleValidate }     from './routes/validate.js';
@@ -30,9 +30,9 @@ export default {
     // ── Public endpoints ─────────────────────────────────────────────────────
     // Uncomment each route as you implement it.
 
-    // if (pathname === '/request-trial' && method === 'POST') {
-    //   return handleRequestTrial(request, env);
-    // }
+    if (pathname === '/request-trial' && method === 'POST') {
+      return handleRequestTrial(request, env);
+    }
 
     // if (pathname === '/verify' && method === 'POST') {
     //   return handleVerify(request, env);
