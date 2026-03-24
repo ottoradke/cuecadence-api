@@ -6,11 +6,11 @@ import { handleRequestTrial } from './routes/requestTrial.js';
 import { handleVerify }       from './routes/verify.js';
 import { handleActivate }     from './routes/activate.js';
 import { handleValidate }     from './routes/validate.js';
-// import { handleAdminKeys }    from './routes/admin/keys.js';
-// import { handleAdminUpdate }  from './routes/admin/update.js';
-// import { handleAdminRevoke }  from './routes/admin/revoke.js';
-// import { handleAdminResetDevice } from './routes/admin/resetDevice.js';
-// import { handleAdminStats }   from './routes/admin/stats.js';
+import { handleAdminKeys }        from './routes/admin/keys.js';
+import { handleAdminUpdate }      from './routes/admin/update.js';
+import { handleAdminRevoke }      from './routes/admin/revoke.js';
+import { handleAdminResetDevice } from './routes/admin/resetDevice.js';
+import { handleAdminStats }       from './routes/admin/stats.js';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -50,29 +50,29 @@ export default {
     // Protected by Cloudflare Access — requests without a valid Access JWT
     // are blocked before they reach this Worker.
 
-    // if (pathname === '/admin/keys' && method === 'GET') {
-    //   return handleAdminKeys(request, env);
-    // }
+    if (pathname === '/admin/keys' && method === 'GET') {
+      return handleAdminKeys(request, env);
+    }
 
-    // if (pathname.startsWith('/admin/keys/') && method === 'GET') {
-    //   return handleAdminKeys(request, env);
-    // }
+    if (pathname.startsWith('/admin/keys/') && method === 'GET') {
+      return handleAdminKeys(request, env);
+    }
 
-    // if (pathname.startsWith('/admin/keys/') && method === 'PATCH') {
-    //   return handleAdminUpdate(request, env);
-    // }
+    if (pathname.startsWith('/admin/keys/') && method === 'PATCH') {
+      return handleAdminUpdate(request, env);
+    }
 
-    // if (pathname.endsWith('/revoke') && method === 'POST') {
-    //   return handleAdminRevoke(request, env);
-    // }
+    if (pathname.endsWith('/revoke') && method === 'POST') {
+      return handleAdminRevoke(request, env);
+    }
 
-    // if (pathname.endsWith('/reset-device') && method === 'POST') {
-    //   return handleAdminResetDevice(request, env);
-    // }
+    if (pathname.endsWith('/reset-device') && method === 'POST') {
+      return handleAdminResetDevice(request, env);
+    }
 
-    // if (pathname === '/admin/stats' && method === 'GET') {
-    //   return handleAdminStats(request, env);
-    // }
+    if (pathname === '/admin/stats' && method === 'GET') {
+      return handleAdminStats(request, env);
+    }
 
     return jsonResponse({ error: 'Not found' }, 404);
   },
