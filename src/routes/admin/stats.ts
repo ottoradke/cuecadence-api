@@ -1,7 +1,7 @@
 // GET /admin/stats
 
 import type { Env } from '../../types/index.js';
-import { jsonResponse } from '../../lib/cors.js';
+import { jsonResponseWithCors } from '../../lib/cors.js';
 
 export async function handleAdminStats(
   _request: Request,
@@ -51,7 +51,7 @@ export async function handleAdminStats(
 
   const paidCount = (tierMap['basic'] ?? 0) + (tierMap['standard'] ?? 0) + (tierMap['pro'] ?? 0);
 
-  return jsonResponse({
+  return jsonResponseWithCors({
     // Dashboard cards
     total_keys:     totalResult?.count ?? 0,
     active_trials:  statusMap['active'] ?? 0,
@@ -76,5 +76,5 @@ export async function handleAdminStats(
 
     // Recent activity feed
     recent_events: recentEvents.results,
-  });
+  }, env.ADMIN_ORIGIN);
 }

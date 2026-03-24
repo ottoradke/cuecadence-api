@@ -2,7 +2,7 @@
 
 import type { Env } from '../../types/index.js';
 import { getKeyByHash, revokeKey, insertEvent, insertAdminSession } from '../../lib/db.js';
-import { jsonResponse } from '../../lib/cors.js';
+import { jsonResponseWithCors } from '../../lib/cors.js';
 import { getAdminEmail } from './shared.js';
 
 export async function handleAdminRevoke(
@@ -11,14 +11,14 @@ export async function handleAdminRevoke(
 ): Promise<Response> {
   const url   = new URL(request.url);
   const match = url.pathname.match(/^\/admin\/keys\/([^/]+)\/revoke$/);
-  if (!match) return jsonResponse({ error: 'Not found' }, 404);
+  if (!match) return jsonResponseWithCors({ error: 'Not found' }, env.ADMIN_ORIGIN, 404);
   const keyHash = match[1];
 
   const record = await getKeyByHash(env.DB, keyHash);
-  if (!record) return jsonResponse({ error: 'Key not found' }, 404);
+  if (!record) return jsonResponseWithCors({ error: 'Key not found' }, env.ADMIN_ORIGIN, 404);
 
   if (record.status === 'revoked') {
-    return jsonResponse({ error: 'Key is already revoked' }, 400);
+    return jsonResponseWithCors({ error: 'Key is already revoked' }, env.ADMIN_ORIGIN, 400);
   }
 
   const adminEmail = getAdminEmail(request);
@@ -38,5 +38,5 @@ export async function handleAdminRevoke(
 
   await insertAdminSession(env.DB, adminEmail, `Revoked key ${keyHash}`, keyHash);
 
-  return jsonResponse({ revoked: true });
+  return jsonResponseWithCors({ revoked: true }, env.ADMIN_ORIGIN);
 }

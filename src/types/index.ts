@@ -8,6 +8,7 @@ export interface Env {
   ADMIN_SECRET: string;
   ENVIRONMENT: string;
   CORS_ORIGIN: string;
+  ADMIN_ORIGIN: string;
 }
 
 // ── Database row types ────────────────────────────────────────────────────────

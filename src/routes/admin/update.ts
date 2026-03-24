@@ -3,7 +3,7 @@
 
 import type { Env, AdminUpdateBody } from '../../types/index.js';
 import { getKeyByHash, updateExpiry, insertEvent, insertAdminSession } from '../../lib/db.js';
-import { jsonResponse } from '../../lib/cors.js';
+import { jsonResponseWithCors } from '../../lib/cors.js';
 import { getAdminEmail } from './shared.js';
 
 export async function handleAdminUpdate(
@@ -12,18 +12,18 @@ export async function handleAdminUpdate(
 ): Promise<Response> {
   const url      = new URL(request.url);
   const match    = url.pathname.match(/^\/admin\/keys\/([^/]+)$/);
-  if (!match) return jsonResponse({ error: 'Not found' }, 404);
+  if (!match) return jsonResponseWithCors({ error: 'Not found' }, env.ADMIN_ORIGIN, 404);
   const keyHash = match[1];
 
   let body: Partial<AdminUpdateBody>;
   try {
     body = await request.json() as Partial<AdminUpdateBody>;
   } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400);
+    return jsonResponseWithCors({ error: 'Invalid JSON' }, env.ADMIN_ORIGIN, 400);
   }
 
   const record = await getKeyByHash(env.DB, keyHash);
-  if (!record) return jsonResponse({ error: 'Key not found' }, 404);
+  if (!record) return jsonResponseWithCors({ error: 'Key not found' }, env.ADMIN_ORIGIN, 404);
 
   const adminEmail = getAdminEmail(request);
   const now        = Math.floor(Date.now() / 1000);
@@ -68,5 +68,5 @@ export async function handleAdminUpdate(
   }
 
   const updated = await getKeyByHash(env.DB, keyHash);
-  return jsonResponse({ key: updated });
+  return jsonResponseWithCors({ key: updated }, env.ADMIN_ORIGIN);
 }

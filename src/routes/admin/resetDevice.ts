@@ -2,7 +2,7 @@
 
 import type { Env, AdminResetDeviceBody } from '../../types/index.js';
 import { getKeyByHash, resetDeviceSlot, insertEvent, insertAdminSession } from '../../lib/db.js';
-import { jsonResponse } from '../../lib/cors.js';
+import { jsonResponseWithCors } from '../../lib/cors.js';
 import { getAdminEmail } from './shared.js';
 
 export async function handleAdminResetDevice(
@@ -11,23 +11,23 @@ export async function handleAdminResetDevice(
 ): Promise<Response> {
   const url   = new URL(request.url);
   const match = url.pathname.match(/^\/admin\/keys\/([^/]+)\/reset-device$/);
-  if (!match) return jsonResponse({ error: 'Not found' }, 404);
+  if (!match) return jsonResponseWithCors({ error: 'Not found' }, env.ADMIN_ORIGIN, 404);
   const keyHash = match[1];
 
   let body: Partial<AdminResetDeviceBody>;
   try {
     body = await request.json() as Partial<AdminResetDeviceBody>;
   } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400);
+    return jsonResponseWithCors({ error: 'Invalid JSON' }, env.ADMIN_ORIGIN, 400);
   }
 
   const platform = body.platform === 'windows' || body.platform === 'mac' ? body.platform : null;
   if (!platform) {
-    return jsonResponse({ error: 'platform is required (windows or mac)' }, 400);
+    return jsonResponseWithCors({ error: 'platform is required (windows or mac)' }, env.ADMIN_ORIGIN, 400);
   }
 
   const record = await getKeyByHash(env.DB, keyHash);
-  if (!record) return jsonResponse({ error: 'Key not found' }, 404);
+  if (!record) return jsonResponseWithCors({ error: 'Key not found' }, env.ADMIN_ORIGIN, 404);
 
   const adminEmail = getAdminEmail(request);
   const now        = Math.floor(Date.now() / 1000);
@@ -46,5 +46,5 @@ export async function handleAdminResetDevice(
 
   await insertAdminSession(env.DB, adminEmail, `Reset ${platform} device for key ${keyHash}`, keyHash);
 
-  return jsonResponse({ reset: true });
+  return jsonResponseWithCors({ reset: true }, env.ADMIN_ORIGIN);
 }

@@ -19,7 +19,8 @@ export default {
     const method   = request.method;
 
     // ── CORS preflight ──
-    const preflight = handleOptions(request, env.CORS_ORIGIN);
+    const origin = pathname.startsWith('/admin/') ? env.ADMIN_ORIGIN : env.CORS_ORIGIN;
+    const preflight = handleOptions(request, origin);
     if (preflight) return preflight;
 
     // ── Health check ────
