@@ -2,6 +2,8 @@ name = "cuecadence-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+preview_urls = false
 
 # ── D1 Database binding ──────────────────────────────────────────────────────
 # Replace YOUR_DATABASE_ID_HERE with the UUID printed by:
