@@ -5,7 +5,7 @@ import { handleOptions, jsonResponse } from './lib/cors.js';
 import { handleRequestTrial } from './routes/requestTrial.js';
 import { handleVerify }       from './routes/verify.js';
 import { handleActivate }     from './routes/activate.js';
-// import { handleValidate }     from './routes/validate.js';
+import { handleValidate }     from './routes/validate.js';
 // import { handleAdminKeys }    from './routes/admin/keys.js';
 // import { handleAdminUpdate }  from './routes/admin/update.js';
 // import { handleAdminRevoke }  from './routes/admin/revoke.js';
@@ -42,9 +42,9 @@ export default {
       return handleActivate(request, env);
     }
 
-    // if (pathname === '/validate' && method === 'POST') {
-    //   return handleValidate(request, env);
-    // }
+    if (pathname === '/validate' && method === 'POST') {
+      return handleValidate(request, env);
+    }
 
     // ── Admin endpoints ──────────────────────────────────────────────────────
     // Protected by Cloudflare Access — requests without a valid Access JWT
