@@ -10,7 +10,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "cuecadence-keys"
-database_id = "YOUR_DATABASE_ID_HERE"
+database_id = "c1749b2d-dcb9-4c56-8f30-f27cc272ae4f"
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 # Once api.cuecadence.io is added as a custom domain in the Cloudflare dashboard,
