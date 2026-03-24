@@ -4,7 +4,7 @@ import { handleOptions, jsonResponse } from './lib/cors.js';
 // Route handlers — implement these one at a time per TODO.md
 import { handleRequestTrial } from './routes/requestTrial.js';
 import { handleVerify }       from './routes/verify.js';
-// import { handleActivate }     from './routes/activate.js';
+import { handleActivate }     from './routes/activate.js';
 // import { handleValidate }     from './routes/validate.js';
 // import { handleAdminKeys }    from './routes/admin/keys.js';
 // import { handleAdminUpdate }  from './routes/admin/update.js';
@@ -38,9 +38,9 @@ export default {
       return handleVerify(request, env);
     }
 
-    // if (pathname === '/activate' && method === 'POST') {
-    //   return handleActivate(request, env);
-    // }
+    if (pathname === '/activate' && method === 'POST') {
+      return handleActivate(request, env);
+    }
 
     // if (pathname === '/validate' && method === 'POST') {
     //   return handleValidate(request, env);
