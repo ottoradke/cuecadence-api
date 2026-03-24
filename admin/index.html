@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CueCadence Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #F4F6F8; }
+    .badge-pending    { background:#E8F0FB; color:#1F4B8E; }
+    .badge-active     { background:#E6F4EC; color:#1A7F4B; }
+    .badge-expired    { background:#FFF3E0; color:#C05C00; }
+    .badge-revoked    { background:#FEE2E2; color:#B91C1C; }
+    .badge-trial      { background:#F3E8FF; color:#6B21A8; }
+    .badge-basic      { background:#E8F0FB; color:#1F4B8E; }
+    .badge-standard   { background:#E6F4EC; color:#1A7F4B; }
+    .badge-pro        { background:#FFF3E0; color:#C05C00; }
+    .event-key_requested    { background:#E8F0FB; color:#1F4B8E; }
+    .event-email_verified   { background:#E6F4EC; color:#1A7F4B; }
+    .event-app_activated    { background:#F3E8FF; color:#6B21A8; }
+    .event-app_validated    { background:#F4F6F8; color:#5A6472; }
+    .event-expiry_changed   { background:#FFF3E0; color:#C05C00; }
+    .event-tier_changed     { background:#F3E8FF; color:#6B21A8; }
+    .event-key_revoked      { background:#FEE2E2; color:#B91C1C; }
+    .event-device_reset     { background:#FFF3E0; color:#C05C00; }
+    .event-validation_failed{ background:#FEE2E2; color:#B91C1C; }
+  </style>
+</head>
+<body class="min-h-screen font-sans text-gray-900">
+
+  <!-- Nav -->
+  <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-6">
+      <span class="font-bold text-blue-900 text-lg">CueCadence <span class="font-normal text-gray-500 text-sm">Admin</span></span>
+      <a href="#" onclick="showView('dashboard')" class="text-sm text-gray-600 hover:text-blue-900">Dashboard</a>
+      <a href="#" onclick="showView('keys')"      class="text-sm text-gray-600 hover:text-blue-900">Keys</a>
+      <a href="#" onclick="showView('stats')"     class="text-sm text-gray-600 hover:text-blue-900">Stats</a>
+    </div>
+    <span id="nav-status" class="text-xs text-gray-400">Connecting…</span>
+  </nav>
+
+  <!-- Views -->
+  <main class="max-w-6xl mx-auto px-6 py-8">
+
+    <!-- Dashboard -->
+    <div id="view-dashboard">
+      <h1 class="text-2xl font-bold text-blue-900 mb-6">Dashboard</h1>
+      <div id="stats-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="text-xs text-gray-500 mb-1">Total Keys</div>
+          <div id="stat-total" class="text-3xl font-bold text-blue-900">—</div>
+        </div>
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="text-xs text-gray-500 mb-1">Active Trials</div>
+          <div id="stat-active" class="text-3xl font-bold text-green-700">—</div>
+        </div>
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="text-xs text-gray-500 mb-1">Expiring (7d)</div>
+          <div id="stat-exp7" class="text-3xl font-bold text-orange-600">—</div>
+        </div>
+        <div class="bg-white rounded-lg border border-gray-200 p-4">
+          <div class="text-xs text-gray-500 mb-1">Conversions</div>
+          <div id="stat-paid" class="text-3xl font-bold text-purple-700">—</div>
+        </div>
+      </div>
+
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Recent Activity</h2>
+      <div id="recent-events" class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
+        <div class="p-4 text-sm text-gray-400">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Key List -->
+    <div id="view-keys" class="hidden">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-blue-900">Keys</h1>
+        <div class="flex gap-3">
+          <input id="keys-search" type="text" placeholder="Search key or email…"
+            class="border border-gray-200 rounded px-3 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            oninput="filterKeys()" />
+          <select id="keys-status-filter" class="border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none"
+            onchange="filterKeys()">
+            <option value="">All statuses</option>
+            <option value="pending_verification">Pending</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+            <option value="revoked">Revoked</option>
+          </select>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-blue-900 text-white">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold">Key</th>
+              <th class="text-left px-4 py-3 font-semibold">Status</th>
+              <th class="text-left px-4 py-3 font-semibold">Tier</th>
+              <th class="text-left px-4 py-3 font-semibold">Requested</th>
+              <th class="text-left px-4 py-3 font-semibold">Verified</th>
+              <th class="text-left px-4 py-3 font-semibold">Activated</th>
+              <th class="text-left px-4 py-3 font-semibold">Expires</th>
+            </tr>
+          </thead>
+          <tbody id="keys-tbody">
+            <tr><td colspan="7" class="px-4 py-6 text-gray-400 text-center">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Key Detail -->
+    <div id="view-key-detail" class="hidden">
+      <button onclick="showView('keys')" class="text-sm text-blue-900 hover:underline mb-4 inline-flex items-center gap-1">
+        ← Back to Keys
+      </button>
+      <div id="key-detail-content">
+        <div class="text-gray-400 text-sm">Loading…</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div id="view-stats" class="hidden">
+      <h1 class="text-2xl font-bold text-blue-900 mb-6">Stats</h1>
+
+      <h2 class="text-lg font-semibold text-gray-800 mb-3">Conversion Funnel</h2>
+      <div id="funnel" class="flex gap-4 mb-8">
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
+          <div class="text-xs text-gray-500 mb-1">Requested</div>
+          <div id="funnel-requested" class="text-4xl font-bold text-blue-900">—</div>
+        </div>
+        <div class="flex items-center text-gray-300 text-2xl">→</div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
+          <div class="text-xs text-gray-500 mb-1">Verified</div>
+          <div id="funnel-verified" class="text-4xl font-bold text-green-700">—</div>
+          <div id="funnel-verified-rate" class="text-xs text-gray-400 mt-1"></div>
+        </div>
+        <div class="flex items-center text-gray-300 text-2xl">→</div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
+          <div class="text-xs text-gray-500 mb-1">Activated</div>
+          <div id="funnel-activated" class="text-4xl font-bold text-purple-700">—</div>
+          <div id="funnel-activated-rate" class="text-xs text-gray-400 mt-1"></div>
+        </div>
+        <div class="flex items-center text-gray-300 text-2xl">→</div>
+        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
+          <div class="text-xs text-gray-500 mb-1">Paid</div>
+          <div id="funnel-paid" class="text-4xl font-bold text-orange-600">—</div>
+          <div id="funnel-paid-rate" class="text-xs text-gray-400 mt-1"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-3">Status Breakdown</h2>
+          <div id="status-breakdown" class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 mb-3">Tier Breakdown</h2>
+          <div id="tier-breakdown" class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API = 'https://api.cuecadence.io';
+    let allKeys = [];
+
+    // ── View routing ──────────────────────────────────────────────────────────
+
+    function showView(name, data) {
+      document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById('view-' + name).classList.remove('hidden');
+      if (name === 'dashboard') loadDashboard();
+      if (name === 'keys')      loadKeys();
+      if (name === 'stats')     loadStats();
+      if (name === 'key-detail' && data) loadKeyDetail(data);
+    }
+
+    // ── API fetch ─────────────────────────────────────────────────────────────
+
+    async function apiFetch(path, options = {}) {
+      const res = await fetch(API + path, {
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+      });
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      return res.json();
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    function fmtTs(ts) {
+      if (!ts) return '—';
+      return new Date(ts * 1000).toLocaleString();
+    }
+
+    function badge(value, type) {
+      return `<span class="badge-${value} text-xs font-semibold px-2 py-0.5 rounded-full">${value}</span>`;
+    }
+
+    function eventBadge(event) {
+      return `<span class="event-${event} text-xs font-mono font-semibold px-2 py-0.5 rounded">${event}</span>`;
+    }
+
+    // ── Dashboard ─────────────────────────────────────────────────────────────
+
+    async function loadDashboard() {
+      document.getElementById('nav-status').textContent = '';
+      try {
+        const stats = await apiFetch('/admin/stats');
+        document.getElementById('stat-total').textContent  = stats.total_keys ?? '—';
+        document.getElementById('stat-active').textContent = stats.active_trials ?? '—';
+        document.getElementById('stat-exp7').textContent   = stats.expiring_7d ?? '—';
+        document.getElementById('stat-paid').textContent   = stats.paid_keys ?? '—';
+
+        const eventsEl = document.getElementById('recent-events');
+        if (stats.recent_events && stats.recent_events.length) {
+          eventsEl.innerHTML = stats.recent_events.map(e => `
+            <div class="px-4 py-3 flex items-center gap-3">
+              ${eventBadge(e.event)}
+              <span class="font-mono text-xs text-gray-500">${e.key_hash ? e.key_hash.slice(0,12) + '…' : ''}</span>
+              <span class="text-xs text-gray-400 ml-auto">${fmtTs(e.created_at)}</span>
+            </div>
+          `).join('');
+        } else {
+          eventsEl.innerHTML = '<div class="p-4 text-sm text-gray-400">No recent activity.</div>';
+        }
+      } catch (err) {
+        document.getElementById('nav-status').textContent = 'API unavailable';
+        document.getElementById('recent-events').innerHTML =
+          `<div class="p-4 text-sm text-red-500">Could not load data: ${err.message}</div>`;
+      }
+    }
+
+    // ── Key List ──────────────────────────────────────────────────────────────
+
+    async function loadKeys() {
+      try {
+        const data = await apiFetch('/admin/keys');
+        allKeys = data.keys || [];
+        renderKeys(allKeys);
+      } catch (err) {
+        document.getElementById('keys-tbody').innerHTML =
+          `<tr><td colspan="7" class="px-4 py-6 text-red-500 text-center">${err.message}</td></tr>`;
+      }
+    }
+
+    function renderKeys(keys) {
+      const tbody = document.getElementById('keys-tbody');
+      if (!keys.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-gray-400 text-center">No keys found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = keys.map((k, i) => `
+        <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 cursor-pointer"
+            onclick="showView('key-detail', '${k.key_hash}')">
+          <td class="px-4 py-3 font-mono text-xs text-blue-900">${k.key}</td>
+          <td class="px-4 py-3">${badge(k.status)}</td>
+          <td class="px-4 py-3">${badge(k.tier)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.requested_at)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.verified_at)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.activated_at)}</td>
+          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.expires_at)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterKeys() {
+      const search = document.getElementById('keys-search').value.toLowerCase();
+      const status = document.getElementById('keys-status-filter').value;
+      renderKeys(allKeys.filter(k =>
+        (!search || k.key.toLowerCase().includes(search)) &&
+        (!status || k.status === status)
+      ));
+    }
+
+    // ── Key Detail ────────────────────────────────────────────────────────────
+
+    async function loadKeyDetail(keyHash) {
+      const el = document.getElementById('key-detail-content');
+      el.innerHTML = '<div class="text-gray-400 text-sm">Loading…</div>';
+      try {
+        const data = await apiFetch(`/admin/keys/${keyHash}`);
+        const k = data.key;
+        const events = data.events || [];
+
+        // Convert Unix expires_at to datetime-local value
+        const expiresLocal = k.expires_at
+          ? new Date(k.expires_at * 1000).toISOString().slice(0, 16)
+          : '';
+
+        el.innerHTML = `
+          <!-- Summary card -->
+          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex items-start justify-between mb-4">
+              <div>
+                <div class="font-mono text-xl font-bold text-blue-900 mb-1">${k.key}</div>
+                <div class="flex gap-2">${badge(k.status)} ${badge(k.tier)}</div>
+              </div>
+              <button onclick="confirmRevoke('${k.key_hash}')"
+                class="text-sm text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-50">
+                Revoke Key
+              </button>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-sm">
+              <div><span class="text-gray-500">Requested</span><br>${fmtTs(k.requested_at)}</div>
+              <div><span class="text-gray-500">Verified</span><br>${fmtTs(k.verified_at)}</div>
+              <div><span class="text-gray-500">Activated</span><br>${fmtTs(k.activated_at)}</div>
+              <div><span class="text-gray-500">Last Validated</span><br>${fmtTs(k.last_validated_at)}</div>
+            </div>
+          </div>
+
+          <!-- Device info -->
+          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Device Seats</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex items-center justify-between border border-gray-100 rounded p-3">
+                <div>
+                  <div class="text-xs text-gray-500 mb-1">Windows</div>
+                  <div class="font-mono text-xs ${k.windows_device_id ? 'text-green-700' : 'text-gray-300'}">
+                    ${k.windows_device_id ? k.windows_device_id.slice(0,16) + '…' : 'Not activated'}
+                  </div>
+                </div>
+                ${k.windows_device_id ? `
+                <button onclick="resetDevice('${k.key_hash}', 'windows')"
+                  class="text-xs text-orange-600 border border-orange-200 rounded px-2 py-1 hover:bg-orange-50">
+                  Reset
+                </button>` : ''}
+              </div>
+              <div class="flex items-center justify-between border border-gray-100 rounded p-3">
+                <div>
+                  <div class="text-xs text-gray-500 mb-1">Mac</div>
+                  <div class="font-mono text-xs ${k.mac_device_id ? 'text-green-700' : 'text-gray-300'}">
+                    ${k.mac_device_id ? k.mac_device_id.slice(0,16) + '…' : 'Not activated'}
+                  </div>
+                </div>
+                ${k.mac_device_id ? `
+                <button onclick="resetDevice('${k.key_hash}', 'mac')"
+                  class="text-xs text-orange-600 border border-orange-200 rounded px-2 py-1 hover:bg-orange-50">
+                  Reset
+                </button>` : ''}
+              </div>
+            </div>
+          </div>
+
+          <!-- Expiry + Tier editor -->
+          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Edit Key</h3>
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Expiry Date/Time (local time)</label>
+                <input type="datetime-local" id="edit-expires" value="${expiresLocal}"
+                  class="border border-gray-200 rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-200" />
+              </div>
+              <div>
+                <label class="block text-xs text-gray-500 mb-1">Tier</label>
+                <select id="edit-tier" class="border border-gray-200 rounded px-3 py-1.5 text-sm w-full focus:outline-none">
+                  <option value="trial"    ${k.tier==='trial'?'selected':''}>trial</option>
+                  <option value="basic"    ${k.tier==='basic'?'selected':''}>basic</option>
+                  <option value="standard" ${k.tier==='standard'?'selected':''}>standard</option>
+                  <option value="pro"      ${k.tier==='pro'?'selected':''}>pro</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="saveKeyEdits('${k.key_hash}')"
+              class="mt-4 bg-blue-900 text-white text-sm rounded px-4 py-2 hover:bg-blue-800">
+              Save Changes
+            </button>
+            <span id="edit-status" class="text-xs text-gray-400 ml-3"></span>
+          </div>
+
+          <!-- Event timeline -->
+          <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Event Timeline</h3>
+            ${events.length ? `
+            <div class="divide-y divide-gray-100">
+              ${events.map(e => `
+                <div class="py-3 flex items-start gap-3">
+                  ${eventBadge(e.event)}
+                  <div class="flex-1 min-w-0">
+                    ${e.platform ? `<span class="text-xs text-gray-400">${e.platform}</span>` : ''}
+                    ${e.metadata ? `
+                    <details class="mt-1">
+                      <summary class="text-xs text-gray-400 cursor-pointer">metadata</summary>
+                      <pre class="text-xs bg-gray-50 rounded p-2 mt-1 overflow-x-auto">${JSON.stringify(JSON.parse(e.metadata), null, 2)}</pre>
+                    </details>` : ''}
+                  </div>
+                  <span class="text-xs text-gray-400 whitespace-nowrap">${fmtTs(e.created_at)}</span>
+                </div>
+              `).join('')}
+            </div>` : '<div class="text-sm text-gray-400">No events yet.</div>'}
+          </div>
+        `;
+      } catch (err) {
+        el.innerHTML = `<div class="text-red-500 text-sm">${err.message}</div>`;
+      }
+    }
+
+    async function saveKeyEdits(keyHash) {
+      const statusEl = document.getElementById('edit-status');
+      const expiresVal = document.getElementById('edit-expires').value;
+      const tier = document.getElementById('edit-tier').value;
+
+      const body = { tier, changed_by: 'admin' };
+      if (expiresVal) {
+        body.expires_at = Math.floor(new Date(expiresVal).getTime() / 1000);
+      }
+
+      try {
+        statusEl.textContent = 'Saving…';
+        await apiFetch(`/admin/keys/${keyHash}`, {
+          method: 'PATCH',
+          body: JSON.stringify(body),
+        });
+        statusEl.textContent = 'Saved. Changes take effect on the user\'s next app launch.';
+        statusEl.className = 'text-xs text-green-600 ml-3';
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        statusEl.className = 'text-xs text-red-500 ml-3';
+      }
+    }
+
+    async function confirmRevoke(keyHash) {
+      if (!confirm('Revoke this key? The user will be locked out on their next app launch.')) return;
+      try {
+        await apiFetch(`/admin/keys/${keyHash}/revoke`, { method: 'POST' });
+        alert('Key revoked. Reloading…');
+        loadKeyDetail(keyHash);
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+
+    async function resetDevice(keyHash, platform) {
+      if (!confirm(`Reset the ${platform} device slot? The user can re-activate on a new ${platform} machine.`)) return;
+      try {
+        await apiFetch(`/admin/keys/${keyHash}/reset-device`, {
+          method: 'POST',
+          body: JSON.stringify({ platform }),
+        });
+        alert('Device slot cleared. Reloading…');
+        loadKeyDetail(keyHash);
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+
+    async function loadStats() {
+      try {
+        const stats = await apiFetch('/admin/stats');
+        const req  = stats.total_keys || 0;
+        const ver  = stats.verified_keys || 0;
+        const act  = stats.activated_keys || 0;
+        const paid = stats.paid_keys || 0;
+
+        document.getElementById('funnel-requested').textContent = req;
+        document.getElementById('funnel-verified').textContent  = ver;
+        document.getElementById('funnel-activated').textContent = act;
+        document.getElementById('funnel-paid').textContent      = paid;
+
+        document.getElementById('funnel-verified-rate').textContent  = req  ? Math.round(ver/req*100)+'% of requested' : '';
+        document.getElementById('funnel-activated-rate').textContent = ver  ? Math.round(act/ver*100)+'% of verified'  : '';
+        document.getElementById('funnel-paid-rate').textContent      = act  ? Math.round(paid/act*100)+'% of activated': '';
+
+        const statusBreakdown = document.getElementById('status-breakdown');
+        const statuses = ['pending_verification','active','expired','revoked'];
+        statusBreakdown.innerHTML = statuses.map(s => `
+          <div class="px-4 py-3 flex justify-between items-center">
+            ${badge(s)}
+            <span class="font-semibold text-gray-700">${stats['status_' + s] ?? 0}</span>
+          </div>
+        `).join('');
+
+        const tierBreakdown = document.getElementById('tier-breakdown');
+        const tiers = ['trial','basic','standard','pro'];
+        tierBreakdown.innerHTML = tiers.map(t => `
+          <div class="px-4 py-3 flex justify-between items-center">
+            ${badge(t)}
+            <span class="font-semibold text-gray-700">${stats['tier_' + t] ?? 0}</span>
+          </div>
+        `).join('');
+      } catch (err) {
+        document.getElementById('funnel').innerHTML =
+          `<div class="text-red-500 text-sm col-span-7">${err.message}</div>`;
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    showView('dashboard');
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+name = "cuecadence-api"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ── D1 Database binding ──────────────────────────────────────────────────────
+# Replace YOUR_DATABASE_ID_HERE with the UUID printed by:
+#   wrangler d1 create cuecadence-keys
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cuecadence-keys"
+database_id = "YOUR_DATABASE_ID_HERE"
+
+# ── Routes ───────────────────────────────────────────────────────────────────
+# Once api.cuecadence.io is added as a custom domain in the Cloudflare dashboard,
+# requests to that domain are automatically routed to this Worker.
+# The routes below are for reference; custom domains take precedence.
+
+# ── Environment variables ────────────────────────────────────────────────────
+# Secrets (HMAC_SECRET, RESEND_API_KEY, ADMIN_SECRET) are NOT set here.
+# Set them via: wrangler secret put <NAME>
+# Or in: Cloudflare dashboard → Workers → cuecadence-api → Settings → Variables
+# For local dev, put them in .dev.vars (see .dev.vars.example)
+
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGIN = "https://cuecadence.io"
+
+[dev]
+port = 8787
+local_protocol = "http"

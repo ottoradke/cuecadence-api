@@ -1,0 +1,19 @@
+{
+  "name": "cuecadence-api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate:local": "wrangler d1 execute cuecadence-keys --local --file=migrations/0001_initial.sql",
+    "db:migrate": "wrangler d1 execute cuecadence-keys --file=migrations/0001_initial.sql",
+    "db:query:local": "wrangler d1 execute cuecadence-keys --local",
+    "db:query": "wrangler d1 execute cuecadence-keys",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240919.0",
+    "typescript": "^5.5.0",
+    "wrangler": "^3.78.0"
+  }
+}
