@@ -1,5 +1,5 @@
 import type { D1Database } from '@cloudflare/workers-types';
-import type { KeyRecord, KeyEvent, KeyEventType, Platform } from '../types/index.js';
+import type { KeyRecord, KeyEvent, Platform } from '../types/index.js';
 
 // ── keys table ────────────────────────────────────────────────────────────────
 
