@@ -9,3 +9,4 @@
 HMAC_SECRET=replace-with-openssl-rand-hex-32
 RESEND_API_KEY=re_replace_with_real_key
 ADMIN_SECRET=replace-with-openssl-rand-hex-32
+ADMIN_ORIGIN=http://localhost:8787

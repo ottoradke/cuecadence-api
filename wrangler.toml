@@ -28,6 +28,7 @@ database_id = "c1749b2d-dcb9-4c56-8f30-f27cc272ae4f"
 [vars]
 ENVIRONMENT = "production"
 CORS_ORIGIN = "https://cuecadence.io"
+ADMIN_ORIGIN = "https://admin.cuecadence.io"
 
 [dev]
 port = 8787

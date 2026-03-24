@@ -3,7 +3,7 @@
 
 import type { Env } from '../../types/index.js';
 import { getKeyByHash, getKeyEvents } from '../../lib/db.js';
-import { jsonResponse } from '../../lib/cors.js';
+import { jsonResponseWithCors } from '../../lib/cors.js';
 import { getAdminEmail } from './shared.js';
 
 export async function handleAdminKeys(
@@ -20,10 +20,10 @@ export async function handleAdminKeys(
     const keyHash = detailMatch[1];
     const record  = await getKeyByHash(env.DB, keyHash);
     if (!record) {
-      return jsonResponse({ error: 'Key not found' }, 404);
+      return jsonResponseWithCors({ error: 'Key not found' }, env.ADMIN_ORIGIN, 404);
     }
     const events = await getKeyEvents(env.DB, keyHash);
-    return jsonResponse({ key: record, events });
+    return jsonResponseWithCors({ key: record, events }, env.ADMIN_ORIGIN);
   }
 
   // ── List all keys ───────────────────────────────────────────────────────────
@@ -60,10 +60,10 @@ export async function handleAdminKeys(
   // Suppress unused variable warning — admin email used for future audit logging
   void getAdminEmail(request);
 
-  return jsonResponse({
+  return jsonResponseWithCors({
     keys:  result.results,
     total: countResult?.total ?? 0,
     page,
     limit,
-  });
+  }, env.ADMIN_ORIGIN);
 }
