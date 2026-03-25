@@ -166,6 +166,19 @@
     const API = 'https://api.cuecadence.io';
     let allKeys = [];
 
+    // ── Admin secret ──────────────────────────────────────────────────────────
+    // Prompted once per session and stored in sessionStorage.
+    // The API requires X-Admin-Secret on all /admin/* requests.
+
+    function getAdminSecret() {
+      let secret = sessionStorage.getItem('admin_secret');
+      if (!secret) {
+        secret = prompt('Enter admin secret:');
+        if (secret) sessionStorage.setItem('admin_secret', secret);
+      }
+      return secret ?? '';
+    }
+
     // ── View routing ──────────────────────────────────────────────────────────
 
     function showView(name, data) {
@@ -182,8 +195,16 @@
     async function apiFetch(path, options = {}) {
       const res = await fetch(API + path, {
         ...options,
-        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Secret': getAdminSecret(),
+          ...(options.headers || {}),
+        },
       });
+      if (res.status === 401) {
+        sessionStorage.removeItem('admin_secret');
+        throw new Error('Unauthorized — check your admin secret');
+      }
       if (!res.ok) throw new Error(`API error ${res.status}`);
       return res.json();
     }

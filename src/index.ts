@@ -48,8 +48,15 @@ export default {
     }
 
     // ── Admin endpoints ──────────────────────────────────────────────────────
-    // Protected by Cloudflare Access — requests without a valid Access JWT
-    // are blocked before they reach this Worker.
+    // Secondary guard: require X-Admin-Secret header in addition to
+    // Cloudflare Access protection on admin.cuecadence.io.
+
+    if (pathname.startsWith('/admin/')) {
+      const adminSecret = request.headers.get('X-Admin-Secret');
+      if (!adminSecret || adminSecret !== env.ADMIN_SECRET) {
+        return jsonResponse({ error: 'Unauthorized' }, 401);
+      }
+    }
 
     if (pathname === '/admin/keys' && method === 'GET') {
       return handleAdminKeys(request, env);
