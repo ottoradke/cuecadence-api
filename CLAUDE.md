@@ -198,6 +198,16 @@ no awareness of offline state — it just responds or doesn't.
 
 ---
 
+## Admin dashboard UI conventions
+
+- **No browser dialogs** — never use `confirm()` or `alert()`. Use the `showModal()` helper instead.
+  ```js
+  showModal({ title, body, confirmLabel, confirmStyle, onConfirm })
+  ```
+  Destructive actions (revoke, reset) use a red confirm button. Errors reuse the modal with an OK button.
+
+---
+
 ## Admin dashboard
 
 A single HTML file at `admin/index.html`, deployed via Cloudflare Pages from
