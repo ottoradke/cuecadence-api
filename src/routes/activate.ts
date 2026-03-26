@@ -50,7 +50,11 @@ export async function handleActivate(
   }
 
   if (record.expires_at && record.expires_at < now) {
-    await logFailure(env, keyHash, deviceId, platform, ipHash, now, 'expired');
+    await Promise.all([
+      logFailure(env, keyHash, deviceId, platform, ipHash, now, 'expired'),
+      env.DB.prepare("UPDATE keys SET status = 'expired' WHERE key_hash = ? AND status = 'active'")
+        .bind(keyHash).run(),
+    ]);
     return jsonResponseWithCors({ error: 'Key has expired' }, env.CORS_ORIGIN, 403);
   }
 

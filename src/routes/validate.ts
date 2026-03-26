@@ -61,15 +61,19 @@ export async function handleValidate(
   }
 
   if (record.expires_at && record.expires_at < now) {
-    await insertEvent(env.DB, {
-      key_hash:   payload.key_hash,
-      event:      'validation_failed',
-      device_id:  deviceId,
-      platform,
-      metadata:   JSON.stringify({ result: 'expired' }),
-      ip_hash:    ipHash,
-      created_at: now,
-    });
+    await Promise.all([
+      insertEvent(env.DB, {
+        key_hash:   payload.key_hash,
+        event:      'validation_failed',
+        device_id:  deviceId,
+        platform,
+        metadata:   JSON.stringify({ result: 'expired' }),
+        ip_hash:    ipHash,
+        created_at: now,
+      }),
+      env.DB.prepare("UPDATE keys SET status = 'expired' WHERE key_hash = ? AND status = 'active'")
+        .bind(payload.key_hash).run(),
+    ]);
     return jsonResponseWithCors({ valid: false, error: 'Key has expired' }, env.CORS_ORIGIN, 403);
   }
 

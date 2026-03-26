@@ -8,7 +8,6 @@ import { sendVerificationEmail } from '../lib/email.js';
 import { jsonResponseWithCors } from '../lib/cors.js';
 
 const VERIFY_TOKEN_TTL = 60 * 60 * 24; // 24 hours in seconds
-const TRIAL_DURATION  = 60 * 60 * 24 * 7; // 7 days in seconds
 
 export async function handleRequestTrial(
   request: Request,
@@ -75,7 +74,6 @@ export async function handleRequestTrial(
   const keyHash    = await hashKey(key, env.HMAC_SECRET);
   const verifyToken    = generateVerifyToken();
   const verifyTokenExp = now + VERIFY_TOKEN_TTL;
-  const expiresAt      = now + TRIAL_DURATION;
 
   await insertKey(env.DB, {
     key,
@@ -88,7 +86,7 @@ export async function handleRequestTrial(
     requested_at:      now,
     verified_at:       null,
     activated_at:      null,
-    expires_at:        expiresAt,
+    expires_at:        null,
     windows_device_id: null,
     mac_device_id:     null,
     last_validated_at: null,

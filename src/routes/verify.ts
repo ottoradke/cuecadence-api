@@ -45,8 +45,10 @@ export async function handleVerify(
     return jsonResponseWithCors({ error: 'Invalid or expired token' }, env.CORS_ORIGIN, 400);
   }
 
-  // ── Activate key ────────────────────────────────────────────────────────────
-  await activateKey(env.DB, record.key_hash, record.expires_at!);
+  // ── Activate key — trial clock starts at verification ───────────────────────
+  const TRIAL_DURATION = 60 * 60 * 24 * 14; // 14 days
+  const expiresAt = now + TRIAL_DURATION;
+  await activateKey(env.DB, record.key_hash, expiresAt);
 
   const ip     = request.headers.get('CF-Connecting-IP') ?? '';
   const ipHash = await hashIp(ip);
