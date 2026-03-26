@@ -9,8 +9,10 @@ import { handleValidate }     from './routes/validate.js';
 import { handleAdminKeys }        from './routes/admin/keys.js';
 import { handleAdminUpdate }      from './routes/admin/update.js';
 import { handleAdminRevoke }      from './routes/admin/revoke.js';
-import { handleAdminResetDevice } from './routes/admin/resetDevice.js';
-import { handleAdminStats }       from './routes/admin/stats.js';
+import { handleAdminResetDevice }          from './routes/admin/resetDevice.js';
+import { handleAdminStats }               from './routes/admin/stats.js';
+import { handleAdminResendVerification }  from './routes/admin/resendVerification.js';
+import { handleAdminVerify }              from './routes/admin/verify.js';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -69,6 +71,14 @@ export default {
 
     if (pathname.endsWith('/reset-device') && method === 'POST') {
       return handleAdminResetDevice(request, env);
+    }
+
+    if (pathname.endsWith('/resend-verification') && method === 'POST') {
+      return handleAdminResendVerification(request, env);
+    }
+
+    if (pathname.endsWith('/verify') && method === 'POST') {
+      return handleAdminVerify(request, env);
     }
 
     if (pathname === '/admin/stats' && method === 'GET') {

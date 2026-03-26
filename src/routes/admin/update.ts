@@ -2,7 +2,7 @@
 // Updates expires_at and/or tier for a key.
 
 import type { Env, AdminUpdateBody } from '../../types/index.js';
-import { getKeyByHash, updateExpiry, insertEvent, insertAdminSession } from '../../lib/db.js';
+import { getKeyByHash, updateExpiry, updateAdminNotes, insertEvent, insertAdminSession } from '../../lib/db.js';
 import { jsonResponseWithCors } from '../../lib/cors.js';
 import { getAdminEmail } from './shared.js';
 
@@ -65,6 +65,12 @@ export async function handleAdminUpdate(
     });
 
     await insertAdminSession(env.DB, adminEmail, `Changed tier for key ${keyHash} from ${record.tier} to ${body.tier}`, keyHash);
+  }
+
+  // ── Update admin notes ──────────────────────────────────────────────────────
+  if (typeof body.admin_notes === 'string') {
+    await updateAdminNotes(env.DB, keyHash, body.admin_notes);
+    await insertAdminSession(env.DB, adminEmail, `Updated admin notes for key ${keyHash}`, keyHash);
   }
 
   const updated = await getKeyByHash(env.DB, keyHash);

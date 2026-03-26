@@ -40,6 +40,10 @@ export interface KeyRecord {
   company:            string | null;
   role:               string | null;
   tools:              string | null;
+  // Admin-only fields (never returned to user-facing API)
+  email:              string | null;
+  admin_notes:        string | null;
+  revoke_note:        string | null;
 }
 
 export type KeyEventType =
@@ -110,9 +114,10 @@ export interface ValidateResponse {
 // ── Admin types ───────────────────────────────────────────────────────────────
 
 export interface AdminUpdateBody {
-  expires_at?: number;
-  tier?:       KeyTier;
-  changed_by:  string;
+  expires_at?:   number;
+  tier?:         KeyTier;
+  admin_notes?:  string;
+  changed_by:    string;
 }
 
 export interface AdminResetDeviceBody {

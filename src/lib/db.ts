@@ -41,8 +41,9 @@ export async function insertKey(
       requested_at, verified_at, activated_at,
       expires_at, windows_device_id, mac_device_id,
       last_validated_at, created_at,
-      first_name, last_name, company, role, tools
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      first_name, last_name, company, role, tools,
+      email
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     record.key, record.key_hash, record.email_hash,
     record.status, record.tier,
@@ -51,7 +52,8 @@ export async function insertKey(
     record.expires_at, record.windows_device_id, record.mac_device_id,
     record.last_validated_at, record.created_at,
     record.first_name ?? null, record.last_name ?? null,
-    record.company ?? null, record.role ?? null, record.tools ?? null
+    record.company ?? null, record.role ?? null, record.tools ?? null,
+    record.email ?? null
   ).run();
 }
 
@@ -109,6 +111,39 @@ export async function updateExpiry(
 export async function revokeKey(db: D1Database, keyHash: string): Promise<void> {
   await db.prepare("UPDATE keys SET status = 'revoked' WHERE key_hash = ?")
     .bind(keyHash).run();
+}
+
+export async function revokeKeyWithNote(
+  db: D1Database,
+  keyHash: string,
+  note: string
+): Promise<void> {
+  await db.prepare("UPDATE keys SET status = 'revoked', revoke_note = ? WHERE key_hash = ?")
+    .bind(note, keyHash).run();
+}
+
+export async function updateAdminNotes(
+  db: D1Database,
+  keyHash: string,
+  notes: string
+): Promise<void> {
+  await db.prepare('UPDATE keys SET admin_notes = ? WHERE key_hash = ?')
+    .bind(notes, keyHash).run();
+}
+
+export async function verifyKeyManually(
+  db: D1Database,
+  keyHash: string,
+  now: number
+): Promise<void> {
+  await db.prepare(`
+    UPDATE keys
+    SET status = 'active',
+        verified_at = ?,
+        verify_token = NULL,
+        verify_token_exp = NULL
+    WHERE key_hash = ?
+  `).bind(now, keyHash).run();
 }
 
 export async function resetDeviceSlot(

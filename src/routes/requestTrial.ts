@@ -98,6 +98,9 @@ export async function handleRequestTrial(
     company,
     role,
     tools,
+    email,
+    admin_notes:       null,
+    revoke_note:       null,
   });
 
   await insertEvent(env.DB, {
