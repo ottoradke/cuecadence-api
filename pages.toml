@@ -1,1 +1,4 @@
 pages_build_output_dir = "admin"
+
+[build]
+command = "sed -i \"s/{{COMMIT_SHA}}/${CF_PAGES_COMMIT_SHA:-dev}/g\" admin/index.html"
