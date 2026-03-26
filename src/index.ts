@@ -7,6 +7,7 @@ import { handleVerify }       from './routes/verify.js';
 import { handleActivate }     from './routes/activate.js';
 import { handleValidate }     from './routes/validate.js';
 import { handleAdminKeys }        from './routes/admin/keys.js';
+import { handleAdminGenerateKeys } from './routes/admin/generate.js';
 import { handleAdminUpdate }      from './routes/admin/update.js';
 import { handleAdminRevoke }      from './routes/admin/revoke.js';
 import { handleAdminResetDevice }          from './routes/admin/resetDevice.js';
@@ -52,6 +53,10 @@ export default {
     // ── Admin endpoints ──────────────────────────────────────────────────────
     // Protected by Cloudflare Access — requests without a valid Access JWT
     // are blocked before they reach this Worker.
+
+    if (pathname === '/admin/keys/generate' && method === 'POST') {
+      return handleAdminGenerateKeys(request, env);
+    }
 
     if (pathname === '/admin/keys' && method === 'GET') {
       return handleAdminKeys(request, env);

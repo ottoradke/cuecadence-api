@@ -84,9 +84,13 @@ export interface VerifyBody {
 }
 
 export interface ActivateBody {
-  key:       string;
-  device_id: string;
-  platform:  Platform;
+  key:         string;
+  device_id:   string;
+  platform:    Platform;
+  // Optional — captured from users activating admin-generated keys
+  email?:      string;
+  first_name?: string;
+  last_name?:  string;
 }
 
 export interface ValidateBody {

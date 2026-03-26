@@ -284,6 +284,10 @@
         <h1 style="font-size:22px;font-family:'DM Serif Display',serif;font-weight:400;margin:0;">Users</h1>
         <p style="font-size:13px;color:var(--text-muted);margin:4px 0 0;">All license keys</p>
       </div>
+      <button class="btn btn-outline" onclick="showGenerateModal()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Generate Keys
+      </button>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;">
       <input class="input" id="user-search" placeholder="Search name, company, email, key…" style="width:300px;" oninput="renderUsersTable()">
@@ -1031,6 +1035,95 @@ function exportUserCSV(keyHash) {
     a.click(); URL.revokeObjectURL(url);
     toast('CSV exported');
   }).catch(err => toast(err.message, false));
+}
+
+function showGenerateModal() {
+  const existing = document.getElementById('generate-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'generate-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;width:460px;max-width:92vw;box-shadow:0 24px 48px rgba(0,0,0,.5)">
+      <div style="font-size:16px;font-family:'DM Serif Display',serif;margin-bottom:6px;">Generate Keys</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Pre-activated keys with no email requirement. Users enter their name and email in the app at activation.</div>
+      <div id="generate-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Count (1–50)</label>
+            <input id="gen-count" type="number" min="1" max="50" value="10" class="input" style="width:100%;">
+          </div>
+          <div>
+            <label style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Tier</label>
+            <select id="gen-tier" class="input" style="width:100%;">
+              <option value="trial">Trial</option>
+              <option value="basic">Basic</option>
+              <option value="standard">Standard</option>
+              <option value="pro">Pro</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Expires (days)</label>
+            <input id="gen-expires" type="number" min="1" max="365" value="7" class="input" style="width:100%;">
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:5px;">Note (optional)</label>
+          <input id="gen-note" type="text" class="input" placeholder="e.g. Twitter giveaway March 2026" style="width:100%;">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-outline" onclick="document.getElementById('generate-modal').remove()">Cancel</button>
+          <button class="btn btn-outline" id="gen-submit" style="color:var(--green);border-color:rgba(93,202,165,.3);">Generate</button>
+        </div>
+      </div>
+      <div id="generate-results" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span id="gen-result-label" style="font-size:13px;color:var(--text-muted);"></span>
+          <button class="btn btn-outline" id="gen-copy-all" style="font-size:11px;padding:4px 10px;">Copy All</button>
+        </div>
+        <div id="gen-key-list" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:240px;overflow-y:auto;font-family:'DM Mono',monospace;font-size:13px;line-height:2;"></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+          <button class="btn btn-outline" onclick="document.getElementById('generate-modal').remove();renderUsers();">Done</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.getElementById('gen-count').focus();
+
+  document.getElementById('gen-submit').onclick = async () => {
+    const count      = Math.min(50, Math.max(1, parseInt(document.getElementById('gen-count').value) || 1));
+    const tier       = document.getElementById('gen-tier').value;
+    const expires    = Math.min(365, Math.max(1, parseInt(document.getElementById('gen-expires').value) || 7));
+    const note       = document.getElementById('gen-note').value.trim() || null;
+    const submitBtn  = document.getElementById('gen-submit');
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Generating…';
+
+    try {
+      const data = await apiFetch('/admin/keys/generate', {
+        method: 'POST',
+        body: JSON.stringify({ count, tier, expires_in_days: expires, note }),
+      });
+
+      document.getElementById('generate-form').style.display = 'none';
+      document.getElementById('generate-results').style.display = 'block';
+      document.getElementById('gen-result-label').textContent = `${data.keys.length} keys generated`;
+      document.getElementById('gen-key-list').innerHTML = data.keys
+        .map(k => `<div style="color:var(--accent)">${k}</div>`).join('');
+
+      document.getElementById('gen-copy-all').onclick = () => {
+        navigator.clipboard.writeText(data.keys.join('\n'));
+        toast(`${data.keys.length} keys copied to clipboard`);
+      };
+    } catch (err) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Generate';
+      toast(err.message, false);
+    }
+  };
 }
 
 function actionModal({ title, description, notePlaceholder, confirmLabel = 'Confirm', confirmClass = 'btn-outline', onConfirm }) {

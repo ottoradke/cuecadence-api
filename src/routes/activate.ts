@@ -19,9 +19,12 @@ export async function handleActivate(
     return jsonResponseWithCors({ error: 'Invalid JSON' }, env.CORS_ORIGIN, 400);
   }
 
-  const key      = typeof body.key       === 'string' ? body.key.trim().toUpperCase() : null;
-  const deviceId = typeof body.device_id === 'string' ? body.device_id.trim()        : null;
-  const platform = body.platform === 'windows' || body.platform === 'mac' ? body.platform : null;
+  const key       = typeof body.key        === 'string' ? body.key.trim().toUpperCase()        : null;
+  const deviceId  = typeof body.device_id  === 'string' ? body.device_id.trim()                : null;
+  const platform  = body.platform === 'windows' || body.platform === 'mac' ? body.platform     : null;
+  const email     = typeof body.email      === 'string' ? body.email.trim().toLowerCase()      || null : null;
+  const firstName = typeof body.first_name === 'string' ? body.first_name.trim()               || null : null;
+  const lastName  = typeof body.last_name  === 'string' ? body.last_name.trim()                || null : null;
 
   if (!key || !deviceId || !platform) {
     return jsonResponseWithCors({ error: 'key, device_id, and platform are required' }, env.CORS_ORIGIN, 400);
@@ -68,6 +71,17 @@ export async function handleActivate(
 
   // ── Bind device ─────────────────────────────────────────────────────────────
   await setDeviceId(env.DB, keyHash, platform as Platform, deviceId, now);
+
+  // ── Store contact info if provided (only fills empty slots, never overwrites) ─
+  if (email || firstName || lastName) {
+    await env.DB.prepare(`
+      UPDATE keys SET
+        email      = COALESCE(email, ?),
+        first_name = COALESCE(first_name, ?),
+        last_name  = COALESCE(last_name, ?)
+      WHERE key_hash = ?
+    `).bind(email, firstName, lastName, keyHash).run();
+  }
 
   await insertEvent(env.DB, {
     key_hash:   keyHash,
