@@ -301,7 +301,7 @@
         <option value="standard">Standard</option>
         <option value="pro">Pro</option>
       </select>
-      <button id="user-reset-filters" onclick="resetUserFilters()" disabled style="font-size:11px;font-family:'DM Mono',monospace;background:none;border:none;padding:0;white-space:nowrap;cursor:default;color:var(--text-dim);opacity:.35;">✕ reset filters</button>
+      <button id="user-reset-filters" class="btn btn-disabled" onclick="resetUserFilters()" disabled>✕ Reset Filters</button>
       <span id="user-count" style="margin-left:auto;font-size:12px;color:var(--text-muted);align-self:center;"></span>
     </div>
     <div class="card" style="overflow:hidden;">
@@ -689,9 +689,7 @@ function renderUsersTable() {
   if (resetBtn) {
     const active = !!(search || sf || tf);
     resetBtn.disabled = !active;
-    resetBtn.style.cursor  = active ? 'pointer' : 'default';
-    resetBtn.style.color   = active ? 'var(--text-muted)' : 'var(--text-dim)';
-    resetBtn.style.opacity = active ? '1' : '.35';
+    resetBtn.className = active ? 'btn btn-outline' : 'btn btn-disabled';
   }
 
   let rows = usersData.filter(k => {
