@@ -112,8 +112,23 @@
       </div>
 
       <h2 class="text-lg font-semibold text-[#E6EDF3] mb-3">Recent Activity</h2>
-      <div id="recent-events" class="card divider-y">
-        <div class="p-4 text-sm text-[#8B949E]">Loading…</div>
+      <div class="card overflow-hidden">
+        <table class="w-full text-sm">
+          <thead style="background:#21262D; border-bottom:1px solid #30363D;">
+            <tr>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Event</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Name</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Company</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Tier</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Platform</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Key</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Time</th>
+            </tr>
+          </thead>
+          <tbody id="recent-events">
+            <tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">Loading…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
@@ -281,31 +296,20 @@
 
         const eventsEl = document.getElementById('recent-events');
         if (stats.recent_events && stats.recent_events.length) {
-          eventsEl.innerHTML = stats.recent_events.map(e => {
-            const name    = [e.first_name, e.last_name].filter(Boolean).join(' ');
-            const company = e.company || '';
-            const who     = name && company ? `${name} · ${company}`
-                          : name            ? name
-                          : company         ? company
-                          : e.key_hash      ? e.key_hash.slice(0, 12) + '…'
-                          : '';
-            return `
-              <div class="px-4 py-3 flex items-start gap-3">
-                <div class="pt-0.5">${eventBadge(e.event)}</div>
-                <div class="flex-1 min-w-0">
-                  ${who ? `<div class="text-sm text-[#E6EDF3] truncate">${who}</div>` : ''}
-                  <div class="flex items-center gap-2 mt-0.5">
-                    ${e.tier  ? `${badge(e.tier)}`  : ''}
-                    ${e.platform ? `<span class="text-xs text-[#656D76]">${e.platform}</span>` : ''}
-                    <span class="font-mono text-xs text-[#30363D]">${e.key_hash ? e.key_hash.slice(0,8) : ''}</span>
-                  </div>
-                </div>
-                <span class="text-xs text-[#656D76] whitespace-nowrap pt-0.5">${fmtTs(e.created_at)}</span>
-              </div>
-            `;
-          }).join('');
+          eventsEl.innerHTML = stats.recent_events.map((e, i) => `
+            <tr style="${i % 2 === 0 ? 'background:#161B22;' : 'background:#0D1117;'}"
+                onclick="showView('key-detail', '${e.key_hash}')" style="cursor:pointer;">
+              <td class="px-4 py-3">${eventBadge(e.event)}</td>
+              <td class="px-4 py-3 text-[#E6EDF3]">${[e.first_name, e.last_name].filter(Boolean).join(' ') || '—'}</td>
+              <td class="px-4 py-3 text-[#8B949E]">${e.company || '—'}</td>
+              <td class="px-4 py-3">${e.tier ? badge(e.tier) : '—'}</td>
+              <td class="px-4 py-3 text-[#8B949E]">${e.platform || '—'}</td>
+              <td class="px-4 py-3 font-mono text-xs text-[#30363D]">${e.key_hash ? e.key_hash.slice(0, 12) + '…' : '—'}</td>
+              <td class="px-4 py-3 text-xs text-[#656D76] whitespace-nowrap">${fmtTs(e.created_at)}</td>
+            </tr>
+          `).join('');
         } else {
-          eventsEl.innerHTML = '<div class="p-4 text-sm text-[#8B949E]">No recent activity.</div>';
+          eventsEl.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">No recent activity.</td></tr>';
         }
       } catch (err) {
         document.getElementById('nav-status').textContent = 'API unavailable';
