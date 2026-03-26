@@ -76,7 +76,7 @@
       <div class="flex items-center gap-6">
         <span class="font-bold text-[#58A6FF] text-lg">CueCadence <span class="font-normal text-[#8B949E] text-sm">Admin</span></span>
         <a href="#" onclick="showView('dashboard')" class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Dashboard</a>
-        <a href="#" onclick="showView('keys')"      class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Keys</a>
+        <a href="#" onclick="showView('keys')"      class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Users</a>
         <a href="#" onclick="showView('stats')"     class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Stats</a>
       </div>
       <div class="flex items-center gap-4">
@@ -135,7 +135,7 @@
     <!-- Key List -->
     <div id="view-keys" class="hidden">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-[#E6EDF3]">Keys</h1>
+        <h1 class="text-2xl font-bold text-[#E6EDF3]">Users</h1>
         <div class="flex gap-3">
           <input id="keys-search" type="text" placeholder="Search key or email…"
             style="width:14rem;"
@@ -154,11 +154,11 @@
           <thead style="background:#21262D; border-bottom:1px solid #30363D;">
             <tr>
               <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Key</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Name</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Company</th>
               <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Status</th>
               <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Tier</th>
               <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Requested</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Verified</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Activated</th>
               <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Expires</th>
             </tr>
           </thead>
@@ -355,11 +355,11 @@
             onmouseover="this.style.background='#1C2128'" onmouseout="this.style.background='${i % 2 === 0 ? '#161B22' : '#0D1117'}'"
             onclick="showView('key-detail', '${k.key_hash}')">
           <td class="px-4 py-3 font-mono text-xs text-[#58A6FF]">${k.key}</td>
+          <td class="px-4 py-3 text-sm text-[#E6EDF3]">${[k.first_name, k.last_name].filter(Boolean).join(' ') || '—'}</td>
+          <td class="px-4 py-3 text-sm text-[#8B949E]">${k.company || '—'}</td>
           <td class="px-4 py-3">${badge(k.status)}</td>
           <td class="px-4 py-3">${badge(k.tier)}</td>
           <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.requested_at)}</td>
-          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.verified_at)}</td>
-          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.activated_at)}</td>
           <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.expires_at)}</td>
         </tr>
       `).join('');
