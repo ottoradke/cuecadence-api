@@ -722,12 +722,16 @@ function renderUsersTable() {
     return;
   }
   tbody.innerHTML = rows.map(k => {
-    const name = [k.first_name, k.last_name].filter(Boolean).join(' ') || '—';
+    const name = [k.first_name, k.last_name].filter(Boolean).join(' ');
+    const isGenerated = !k.first_name && !k.last_name && !k.email && !k.company;
     const expClass = k.expires_at < NOW + 7*DAY && k.status === 'active' ? 'color:var(--yellow)' : 'color:var(--text-muted)';
     return `<tr onclick="navigate('detail','${k.key_hash}')">
       <td>
-        <div style="font-weight:600;font-size:13px">${name}</div>
-        <div style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace">${k.email||''}</div>
+        ${isGenerated
+          ? `<div style="font-size:11px;padding:2px 6px;border-radius:3px;background:rgba(139,148,158,.12);color:var(--text-dim);font-family:'DM Mono',monospace;display:inline-block;letter-spacing:.06em">Generated key</div>`
+          : `<div style="font-weight:600;font-size:13px">${name || '—'}</div>
+             <div style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace">${k.email||''}</div>`
+        }
       </td>
       <td style="color:var(--text-muted)">${k.company||'—'}</td>
       <td><span class="mono" style="font-size:12px;color:var(--text-muted)">${k.key}</span></td>
