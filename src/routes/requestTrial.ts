@@ -15,9 +15,9 @@ export async function handleRequestTrial(
   env: Env
 ): Promise<Response> {
   // ── Parse body ──────────────────────────────────────────────────────────────
-  let body: { email?: unknown };
+  let body: { email?: unknown; firstName?: unknown; lastName?: unknown; company?: unknown; role?: unknown; tools?: unknown };
   try {
-    body = await request.json() as { email?: unknown };
+    body = await request.json() as typeof body;
   } catch {
     return jsonResponseWithCors({ error: 'Invalid JSON' }, env.CORS_ORIGIN, 400);
   }
@@ -26,6 +26,12 @@ export async function handleRequestTrial(
   if (!email || !email.includes('@')) {
     return jsonResponseWithCors({ error: 'Valid email required' }, env.CORS_ORIGIN, 400);
   }
+
+  const firstName = typeof body.firstName === 'string' ? body.firstName.trim() || null : null;
+  const lastName  = typeof body.lastName  === 'string' ? body.lastName.trim()  || null : null;
+  const company   = typeof body.company   === 'string' ? body.company.trim()   || null : null;
+  const role      = typeof body.role      === 'string' ? body.role.trim()      || null : null;
+  const tools     = typeof body.tools     === 'string' ? body.tools.trim()     || null : null;
 
   // ── Duplicate check ─────────────────────────────────────────────────────────
   const emailHash  = await hashEmail(email);
@@ -87,6 +93,11 @@ export async function handleRequestTrial(
     mac_device_id:     null,
     last_validated_at: null,
     created_at:        now,
+    first_name:        firstName,
+    last_name:         lastName,
+    company,
+    role,
+    tools,
   });
 
   await insertEvent(env.DB, {

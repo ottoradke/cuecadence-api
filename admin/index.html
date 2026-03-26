@@ -6,37 +6,60 @@
   <title>CueCadence Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: #F4F6F8; }
-    .badge-pending    { background:#E8F0FB; color:#1F4B8E; }
-    .badge-active     { background:#E6F4EC; color:#1A7F4B; }
-    .badge-expired    { background:#FFF3E0; color:#C05C00; }
-    .badge-revoked    { background:#FEE2E2; color:#B91C1C; }
-    .badge-trial      { background:#F3E8FF; color:#6B21A8; }
-    .badge-basic      { background:#E8F0FB; color:#1F4B8E; }
-    .badge-standard   { background:#E6F4EC; color:#1A7F4B; }
-    .badge-pro        { background:#FFF3E0; color:#C05C00; }
-    .event-key_requested    { background:#E8F0FB; color:#1F4B8E; }
-    .event-email_verified   { background:#E6F4EC; color:#1A7F4B; }
-    .event-app_activated    { background:#F3E8FF; color:#6B21A8; }
-    .event-app_validated    { background:#F4F6F8; color:#5A6472; }
-    .event-expiry_changed   { background:#FFF3E0; color:#C05C00; }
-    .event-tier_changed     { background:#F3E8FF; color:#6B21A8; }
-    .event-key_revoked      { background:#FEE2E2; color:#B91C1C; }
-    .event-device_reset     { background:#FFF3E0; color:#C05C00; }
-    .event-validation_failed{ background:#FEE2E2; color:#B91C1C; }
+    body { background: #0D1117; color: #E6EDF3; }
+    /* Cards */
+    .card  { background: #161B22; border: 1px solid #30363D; border-radius: 0.5rem; }
+    .card-inner { background: #21262D; border: 1px solid #30363D; border-radius: 0.375rem; }
+    /* Status badges */
+    .badge-pending    { background:#1C2A40; color:#58A6FF; }
+    .badge-active     { background:#1B3229; color:#3FB950; }
+    .badge-expired    { background:#2D1F00; color:#D29922; }
+    .badge-revoked    { background:#3A1A1A; color:#F85149; }
+    /* Tier badges */
+    .badge-trial      { background:#2A1A40; color:#BC8CFF; }
+    .badge-basic      { background:#1C2A40; color:#58A6FF; }
+    .badge-standard   { background:#1B3229; color:#3FB950; }
+    .badge-pro        { background:#2D1F00; color:#D29922; }
+    /* Event badges */
+    .event-key_requested    { background:#1C2A40; color:#58A6FF; }
+    .event-email_verified   { background:#1B3229; color:#3FB950; }
+    .event-app_activated    { background:#2A1A40; color:#BC8CFF; }
+    .event-app_validated    { background:#1C2028; color:#8B949E; }
+    .event-expiry_changed   { background:#2D1F00; color:#D29922; }
+    .event-tier_changed     { background:#2A1A40; color:#BC8CFF; }
+    .event-key_revoked      { background:#3A1A1A; color:#F85149; }
+    .event-device_reset     { background:#2D1F00; color:#D29922; }
+    .event-validation_failed{ background:#3A1A1A; color:#F85149; }
+    /* Form controls */
+    input, select {
+      background: #21262D;
+      border: 1px solid #30363D;
+      color: #E6EDF3;
+      border-radius: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      font-size: 0.875rem;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: #58A6FF; box-shadow: 0 0 0 2px rgba(88,166,255,0.15); }
+    input[type="datetime-local"] { width: 100%; }
+    select option { background: #21262D; }
+    /* Metadata pre */
+    pre { background: #21262D; color: #8B949E; border-radius: 0.375rem; padding: 0.5rem; }
+    /* Dividers */
+    .divider-y > * + * { border-top: 1px solid #21262D; }
   </style>
 </head>
-<body class="min-h-screen font-sans text-gray-900">
+<body class="min-h-screen font-sans">
 
   <!-- Nav -->
-  <nav class="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+  <nav style="background:#161B22; border-bottom:1px solid #30363D;" class="px-6 py-3 flex items-center justify-between">
     <div class="flex items-center gap-6">
-      <span class="font-bold text-blue-900 text-lg">CueCadence <span class="font-normal text-gray-500 text-sm">Admin</span></span>
-      <a href="#" onclick="showView('dashboard')" class="text-sm text-gray-600 hover:text-blue-900">Dashboard</a>
-      <a href="#" onclick="showView('keys')"      class="text-sm text-gray-600 hover:text-blue-900">Keys</a>
-      <a href="#" onclick="showView('stats')"     class="text-sm text-gray-600 hover:text-blue-900">Stats</a>
+      <span class="font-bold text-[#58A6FF] text-lg">CueCadence <span class="font-normal text-[#8B949E] text-sm">Admin</span></span>
+      <a href="#" onclick="showView('dashboard')" class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Dashboard</a>
+      <a href="#" onclick="showView('keys')"      class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Keys</a>
+      <a href="#" onclick="showView('stats')"     class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Stats</a>
     </div>
-    <span id="nav-status" class="text-xs text-gray-400">Connecting…</span>
+    <span id="nav-status" class="text-xs text-[#656D76]">Connecting…</span>
   </nav>
 
   <!-- Views -->
@@ -44,42 +67,41 @@
 
     <!-- Dashboard -->
     <div id="view-dashboard">
-      <h1 class="text-2xl font-bold text-blue-900 mb-6">Dashboard</h1>
+      <h1 class="text-2xl font-bold text-[#E6EDF3] mb-6">Dashboard</h1>
       <div id="stats-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="text-xs text-gray-500 mb-1">Total Keys</div>
-          <div id="stat-total" class="text-3xl font-bold text-blue-900">—</div>
+        <div class="card p-4">
+          <div class="text-xs text-[#8B949E] mb-1">Total Keys</div>
+          <div id="stat-total" class="text-3xl font-bold text-[#58A6FF]">—</div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="text-xs text-gray-500 mb-1">Active Trials</div>
-          <div id="stat-active" class="text-3xl font-bold text-green-700">—</div>
+        <div class="card p-4">
+          <div class="text-xs text-[#8B949E] mb-1">Active Trials</div>
+          <div id="stat-active" class="text-3xl font-bold text-[#3FB950]">—</div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="text-xs text-gray-500 mb-1">Expiring (7d)</div>
-          <div id="stat-exp7" class="text-3xl font-bold text-orange-600">—</div>
+        <div class="card p-4">
+          <div class="text-xs text-[#8B949E] mb-1">Expiring (7d)</div>
+          <div id="stat-exp7" class="text-3xl font-bold text-[#D29922]">—</div>
         </div>
-        <div class="bg-white rounded-lg border border-gray-200 p-4">
-          <div class="text-xs text-gray-500 mb-1">Conversions</div>
-          <div id="stat-paid" class="text-3xl font-bold text-purple-700">—</div>
+        <div class="card p-4">
+          <div class="text-xs text-[#8B949E] mb-1">Conversions</div>
+          <div id="stat-paid" class="text-3xl font-bold text-[#BC8CFF]">—</div>
         </div>
       </div>
 
-      <h2 class="text-lg font-semibold text-gray-800 mb-3">Recent Activity</h2>
-      <div id="recent-events" class="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100">
-        <div class="p-4 text-sm text-gray-400">Loading…</div>
+      <h2 class="text-lg font-semibold text-[#E6EDF3] mb-3">Recent Activity</h2>
+      <div id="recent-events" class="card divider-y">
+        <div class="p-4 text-sm text-[#8B949E]">Loading…</div>
       </div>
     </div>
 
     <!-- Key List -->
     <div id="view-keys" class="hidden">
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold text-blue-900">Keys</h1>
+        <h1 class="text-2xl font-bold text-[#E6EDF3]">Keys</h1>
         <div class="flex gap-3">
           <input id="keys-search" type="text" placeholder="Search key or email…"
-            class="border border-gray-200 rounded px-3 py-1.5 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            style="width:14rem;"
             oninput="filterKeys()" />
-          <select id="keys-status-filter" class="border border-gray-200 rounded px-3 py-1.5 text-sm focus:outline-none"
-            onchange="filterKeys()">
+          <select id="keys-status-filter" onchange="filterKeys()">
             <option value="">All statuses</option>
             <option value="pending_verification">Pending</option>
             <option value="active">Active</option>
@@ -88,21 +110,21 @@
           </select>
         </div>
       </div>
-      <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div class="card overflow-hidden">
         <table class="w-full text-sm">
-          <thead class="bg-blue-900 text-white">
+          <thead style="background:#21262D; border-bottom:1px solid #30363D;">
             <tr>
-              <th class="text-left px-4 py-3 font-semibold">Key</th>
-              <th class="text-left px-4 py-3 font-semibold">Status</th>
-              <th class="text-left px-4 py-3 font-semibold">Tier</th>
-              <th class="text-left px-4 py-3 font-semibold">Requested</th>
-              <th class="text-left px-4 py-3 font-semibold">Verified</th>
-              <th class="text-left px-4 py-3 font-semibold">Activated</th>
-              <th class="text-left px-4 py-3 font-semibold">Expires</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Key</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Status</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Tier</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Requested</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Verified</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Activated</th>
+              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Expires</th>
             </tr>
           </thead>
           <tbody id="keys-tbody">
-            <tr><td colspan="7" class="px-4 py-6 text-gray-400 text-center">Loading…</td></tr>
+            <tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">Loading…</td></tr>
           </tbody>
         </table>
       </div>
@@ -110,52 +132,52 @@
 
     <!-- Key Detail -->
     <div id="view-key-detail" class="hidden">
-      <button onclick="showView('keys')" class="text-sm text-blue-900 hover:underline mb-4 inline-flex items-center gap-1">
+      <button onclick="showView('keys')" class="text-sm text-[#58A6FF] hover:underline mb-4 inline-flex items-center gap-1">
         ← Back to Keys
       </button>
       <div id="key-detail-content">
-        <div class="text-gray-400 text-sm">Loading…</div>
+        <div class="text-[#8B949E] text-sm">Loading…</div>
       </div>
     </div>
 
     <!-- Stats -->
     <div id="view-stats" class="hidden">
-      <h1 class="text-2xl font-bold text-blue-900 mb-6">Stats</h1>
+      <h1 class="text-2xl font-bold text-[#E6EDF3] mb-6">Stats</h1>
 
-      <h2 class="text-lg font-semibold text-gray-800 mb-3">Conversion Funnel</h2>
+      <h2 class="text-lg font-semibold text-[#E6EDF3] mb-3">Conversion Funnel</h2>
       <div id="funnel" class="flex gap-4 mb-8">
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
-          <div class="text-xs text-gray-500 mb-1">Requested</div>
-          <div id="funnel-requested" class="text-4xl font-bold text-blue-900">—</div>
+        <div class="card p-5 flex-1 text-center">
+          <div class="text-xs text-[#8B949E] mb-1">Requested</div>
+          <div id="funnel-requested" class="text-4xl font-bold text-[#58A6FF]">—</div>
         </div>
-        <div class="flex items-center text-gray-300 text-2xl">→</div>
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
-          <div class="text-xs text-gray-500 mb-1">Verified</div>
-          <div id="funnel-verified" class="text-4xl font-bold text-green-700">—</div>
-          <div id="funnel-verified-rate" class="text-xs text-gray-400 mt-1"></div>
+        <div class="flex items-center text-[#30363D] text-2xl">→</div>
+        <div class="card p-5 flex-1 text-center">
+          <div class="text-xs text-[#8B949E] mb-1">Verified</div>
+          <div id="funnel-verified" class="text-4xl font-bold text-[#3FB950]">—</div>
+          <div id="funnel-verified-rate" class="text-xs text-[#656D76] mt-1"></div>
         </div>
-        <div class="flex items-center text-gray-300 text-2xl">→</div>
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
-          <div class="text-xs text-gray-500 mb-1">Activated</div>
-          <div id="funnel-activated" class="text-4xl font-bold text-purple-700">—</div>
-          <div id="funnel-activated-rate" class="text-xs text-gray-400 mt-1"></div>
+        <div class="flex items-center text-[#30363D] text-2xl">→</div>
+        <div class="card p-5 flex-1 text-center">
+          <div class="text-xs text-[#8B949E] mb-1">Activated</div>
+          <div id="funnel-activated" class="text-4xl font-bold text-[#BC8CFF]">—</div>
+          <div id="funnel-activated-rate" class="text-xs text-[#656D76] mt-1"></div>
         </div>
-        <div class="flex items-center text-gray-300 text-2xl">→</div>
-        <div class="bg-white border border-gray-200 rounded-lg p-5 flex-1 text-center">
-          <div class="text-xs text-gray-500 mb-1">Paid</div>
-          <div id="funnel-paid" class="text-4xl font-bold text-orange-600">—</div>
-          <div id="funnel-paid-rate" class="text-xs text-gray-400 mt-1"></div>
+        <div class="flex items-center text-[#30363D] text-2xl">→</div>
+        <div class="card p-5 flex-1 text-center">
+          <div class="text-xs text-[#8B949E] mb-1">Paid</div>
+          <div id="funnel-paid" class="text-4xl font-bold text-[#D29922]">—</div>
+          <div id="funnel-paid-rate" class="text-xs text-[#656D76] mt-1"></div>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-6">
         <div>
-          <h2 class="text-lg font-semibold text-gray-800 mb-3">Status Breakdown</h2>
-          <div id="status-breakdown" class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+          <h2 class="text-lg font-semibold text-[#E6EDF3] mb-3">Status Breakdown</h2>
+          <div id="status-breakdown" class="card divider-y"></div>
         </div>
         <div>
-          <h2 class="text-lg font-semibold text-gray-800 mb-3">Tier Breakdown</h2>
-          <div id="tier-breakdown" class="bg-white border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+          <h2 class="text-lg font-semibold text-[#E6EDF3] mb-3">Tier Breakdown</h2>
+          <div id="tier-breakdown" class="card divider-y"></div>
         </div>
       </div>
     </div>
@@ -219,17 +241,17 @@
           eventsEl.innerHTML = stats.recent_events.map(e => `
             <div class="px-4 py-3 flex items-center gap-3">
               ${eventBadge(e.event)}
-              <span class="font-mono text-xs text-gray-500">${e.key_hash ? e.key_hash.slice(0,12) + '…' : ''}</span>
-              <span class="text-xs text-gray-400 ml-auto">${fmtTs(e.created_at)}</span>
+              <span class="font-mono text-xs text-[#8B949E]">${e.key_hash ? e.key_hash.slice(0,12) + '…' : ''}</span>
+              <span class="text-xs text-[#656D76] ml-auto">${fmtTs(e.created_at)}</span>
             </div>
           `).join('');
         } else {
-          eventsEl.innerHTML = '<div class="p-4 text-sm text-gray-400">No recent activity.</div>';
+          eventsEl.innerHTML = '<div class="p-4 text-sm text-[#8B949E]">No recent activity.</div>';
         }
       } catch (err) {
         document.getElementById('nav-status').textContent = 'API unavailable';
         document.getElementById('recent-events').innerHTML =
-          `<div class="p-4 text-sm text-red-500">Could not load data: ${err.message}</div>`;
+          `<div class="p-4 text-sm text-[#F85149]">Could not load data: ${err.message}</div>`;
       }
     }
 
@@ -242,26 +264,27 @@
         renderKeys(allKeys);
       } catch (err) {
         document.getElementById('keys-tbody').innerHTML =
-          `<tr><td colspan="7" class="px-4 py-6 text-red-500 text-center">${err.message}</td></tr>`;
+          `<tr><td colspan="7" class="px-4 py-6 text-[#F85149] text-center">${err.message}</td></tr>`;
       }
     }
 
     function renderKeys(keys) {
       const tbody = document.getElementById('keys-tbody');
       if (!keys.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-gray-400 text-center">No keys found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">No keys found.</td></tr>';
         return;
       }
       tbody.innerHTML = keys.map((k, i) => `
-        <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-blue-50 cursor-pointer"
+        <tr style="${i % 2 === 0 ? 'background:#161B22;' : 'background:#0D1117;'} cursor:pointer;"
+            onmouseover="this.style.background='#1C2128'" onmouseout="this.style.background='${i % 2 === 0 ? '#161B22' : '#0D1117'}'"
             onclick="showView('key-detail', '${k.key_hash}')">
-          <td class="px-4 py-3 font-mono text-xs text-blue-900">${k.key}</td>
+          <td class="px-4 py-3 font-mono text-xs text-[#58A6FF]">${k.key}</td>
           <td class="px-4 py-3">${badge(k.status)}</td>
           <td class="px-4 py-3">${badge(k.tier)}</td>
-          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.requested_at)}</td>
-          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.verified_at)}</td>
-          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.activated_at)}</td>
-          <td class="px-4 py-3 text-xs text-gray-500">${fmtTs(k.expires_at)}</td>
+          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.requested_at)}</td>
+          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.verified_at)}</td>
+          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.activated_at)}</td>
+          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.expires_at)}</td>
         </tr>
       `).join('');
     }
@@ -279,7 +302,7 @@
 
     async function loadKeyDetail(keyHash) {
       const el = document.getElementById('key-detail-content');
-      el.innerHTML = '<div class="text-gray-400 text-sm">Loading…</div>';
+      el.innerHTML = '<div class="text-[#8B949E] text-sm">Loading…</div>';
       try {
         const data = await apiFetch(`/admin/keys/${keyHash}`);
         const k = data.key;
@@ -292,52 +315,67 @@
 
         el.innerHTML = `
           <!-- Summary card -->
-          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <div class="card p-6 mb-6">
             <div class="flex items-start justify-between mb-4">
               <div>
-                <div class="font-mono text-xl font-bold text-blue-900 mb-1">${k.key}</div>
+                <div class="font-mono text-xl font-bold text-[#58A6FF] mb-1">${k.key}</div>
                 <div class="flex gap-2">${badge(k.status)} ${badge(k.tier)}</div>
               </div>
               <button onclick="confirmRevoke('${k.key_hash}')"
-                class="text-sm text-red-600 border border-red-200 rounded px-3 py-1.5 hover:bg-red-50">
+                style="background:transparent; border:1px solid #3A1A1A; color:#F85149; border-radius:0.375rem; padding:0.375rem 0.75rem; font-size:0.875rem; cursor:pointer;"
+                onmouseover="this.style.background='rgba(248,81,73,0.1)'" onmouseout="this.style.background='transparent'">
                 Revoke Key
               </button>
             </div>
             <div class="grid grid-cols-3 gap-4 text-sm">
-              <div><span class="text-gray-500">Requested</span><br>${fmtTs(k.requested_at)}</div>
-              <div><span class="text-gray-500">Verified</span><br>${fmtTs(k.verified_at)}</div>
-              <div><span class="text-gray-500">Activated</span><br>${fmtTs(k.activated_at)}</div>
-              <div><span class="text-gray-500">Last Validated</span><br>${fmtTs(k.last_validated_at)}</div>
+              <div><span class="text-[#8B949E]">Requested</span><br><span class="text-[#E6EDF3]">${fmtTs(k.requested_at)}</span></div>
+              <div><span class="text-[#8B949E]">Verified</span><br><span class="text-[#E6EDF3]">${fmtTs(k.verified_at)}</span></div>
+              <div><span class="text-[#8B949E]">Activated</span><br><span class="text-[#E6EDF3]">${fmtTs(k.activated_at)}</span></div>
+              <div><span class="text-[#8B949E]">Last Validated</span><br><span class="text-[#E6EDF3]">${fmtTs(k.last_validated_at)}</span></div>
             </div>
           </div>
 
+          <!-- Lead info -->
+          ${(k.first_name || k.last_name || k.company || k.role || k.tools) ? `
+          <div class="card p-6 mb-6">
+            <h3 class="font-semibold text-[#E6EDF3] mb-4">Lead Info</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              ${(k.first_name || k.last_name) ? `<div><span class="text-[#8B949E]">Name</span><br><span class="text-[#E6EDF3]">${[k.first_name, k.last_name].filter(Boolean).join(' ')}</span></div>` : ''}
+              ${k.company ? `<div><span class="text-[#8B949E]">Company</span><br><span class="text-[#E6EDF3]">${k.company}</span></div>` : ''}
+              ${k.role    ? `<div><span class="text-[#8B949E]">Role</span><br><span class="text-[#E6EDF3]">${k.role}</span></div>` : ''}
+              ${k.tools   ? `<div class="col-span-2"><span class="text-[#8B949E]">Current tools</span><br><span class="text-[#E6EDF3]">${k.tools}</span></div>` : ''}
+            </div>
+          </div>` : ''}
+
           <!-- Device info -->
-          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-            <h3 class="font-semibold text-gray-800 mb-4">Device Seats</h3>
+          <div class="card p-6 mb-6">
+            <h3 class="font-semibold text-[#E6EDF3] mb-4">Device Seats</h3>
             <div class="grid grid-cols-2 gap-4">
-              <div class="flex items-center justify-between border border-gray-100 rounded p-3">
+              <div class="flex items-center justify-between card-inner p-3">
                 <div>
-                  <div class="text-xs text-gray-500 mb-1">Windows</div>
-                  <div class="font-mono text-xs ${k.windows_device_id ? 'text-green-700' : 'text-gray-300'}">
+                  <div class="text-xs text-[#8B949E] mb-1">Windows</div>
+                  <div class="font-mono text-xs ${k.windows_device_id ? 'text-[#3FB950]' : 'text-[#656D76]'}">
                     ${k.windows_device_id ? k.windows_device_id.slice(0,16) + '…' : 'Not activated'}
                   </div>
                 </div>
                 ${k.windows_device_id ? `
                 <button onclick="resetDevice('${k.key_hash}', 'windows')"
-                  class="text-xs text-orange-600 border border-orange-200 rounded px-2 py-1 hover:bg-orange-50">
+                  style="background:transparent; border:1px solid #2D1F00; color:#D29922; border-radius:0.375rem; padding:0.25rem 0.5rem; font-size:0.75rem; cursor:pointer;"
+                  onmouseover="this.style.background='rgba(210,153,34,0.1)'" onmouseout="this.style.background='transparent'">
                   Reset
                 </button>` : ''}
               </div>
-              <div class="flex items-center justify-between border border-gray-100 rounded p-3">
+              <div class="flex items-center justify-between card-inner p-3">
                 <div>
-                  <div class="text-xs text-gray-500 mb-1">Mac</div>
-                  <div class="font-mono text-xs ${k.mac_device_id ? 'text-green-700' : 'text-gray-300'}">
+                  <div class="text-xs text-[#8B949E] mb-1">Mac</div>
+                  <div class="font-mono text-xs ${k.mac_device_id ? 'text-[#3FB950]' : 'text-[#656D76]'}">
                     ${k.mac_device_id ? k.mac_device_id.slice(0,16) + '…' : 'Not activated'}
                   </div>
                 </div>
                 ${k.mac_device_id ? `
                 <button onclick="resetDevice('${k.key_hash}', 'mac')"
-                  class="text-xs text-orange-600 border border-orange-200 rounded px-2 py-1 hover:bg-orange-50">
+                  style="background:transparent; border:1px solid #2D1F00; color:#D29922; border-radius:0.375rem; padding:0.25rem 0.5rem; font-size:0.75rem; cursor:pointer;"
+                  onmouseover="this.style.background='rgba(210,153,34,0.1)'" onmouseout="this.style.background='transparent'">
                   Reset
                 </button>` : ''}
               </div>
@@ -345,17 +383,16 @@
           </div>
 
           <!-- Expiry + Tier editor -->
-          <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-            <h3 class="font-semibold text-gray-800 mb-4">Edit Key</h3>
+          <div class="card p-6 mb-6">
+            <h3 class="font-semibold text-[#E6EDF3] mb-4">Edit Key</h3>
             <div class="grid grid-cols-2 gap-6">
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Expiry Date/Time (local time)</label>
-                <input type="datetime-local" id="edit-expires" value="${expiresLocal}"
-                  class="border border-gray-200 rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                <label class="block text-xs text-[#8B949E] mb-1">Expiry Date/Time (local time)</label>
+                <input type="datetime-local" id="edit-expires" value="${expiresLocal}" />
               </div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Tier</label>
-                <select id="edit-tier" class="border border-gray-200 rounded px-3 py-1.5 text-sm w-full focus:outline-none">
+                <label class="block text-xs text-[#8B949E] mb-1">Tier</label>
+                <select id="edit-tier" style="width:100%;">
                   <option value="trial"    ${k.tier==='trial'?'selected':''}>trial</option>
                   <option value="basic"    ${k.tier==='basic'?'selected':''}>basic</option>
                   <option value="standard" ${k.tier==='standard'?'selected':''}>standard</option>
@@ -364,36 +401,37 @@
               </div>
             </div>
             <button onclick="saveKeyEdits('${k.key_hash}')"
-              class="mt-4 bg-blue-900 text-white text-sm rounded px-4 py-2 hover:bg-blue-800">
+              style="margin-top:1rem; background:#1F6FEB; color:#fff; border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer;"
+              onmouseover="this.style.background='#388BFD'" onmouseout="this.style.background='#1F6FEB'">
               Save Changes
             </button>
-            <span id="edit-status" class="text-xs text-gray-400 ml-3"></span>
+            <span id="edit-status" class="text-xs text-[#656D76] ml-3"></span>
           </div>
 
           <!-- Event timeline -->
-          <div class="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 class="font-semibold text-gray-800 mb-4">Event Timeline</h3>
+          <div class="card p-6">
+            <h3 class="font-semibold text-[#E6EDF3] mb-4">Event Timeline</h3>
             ${events.length ? `
-            <div class="divide-y divide-gray-100">
+            <div class="divider-y">
               ${events.map(e => `
                 <div class="py-3 flex items-start gap-3">
                   ${eventBadge(e.event)}
                   <div class="flex-1 min-w-0">
-                    ${e.platform ? `<span class="text-xs text-gray-400">${e.platform}</span>` : ''}
+                    ${e.platform ? `<span class="text-xs text-[#8B949E]">${e.platform}</span>` : ''}
                     ${e.metadata ? `
                     <details class="mt-1">
-                      <summary class="text-xs text-gray-400 cursor-pointer">metadata</summary>
-                      <pre class="text-xs bg-gray-50 rounded p-2 mt-1 overflow-x-auto">${JSON.stringify(JSON.parse(e.metadata), null, 2)}</pre>
+                      <summary class="text-xs text-[#8B949E] cursor-pointer">metadata</summary>
+                      <pre class="text-xs mt-1 overflow-x-auto">${JSON.stringify(JSON.parse(e.metadata), null, 2)}</pre>
                     </details>` : ''}
                   </div>
-                  <span class="text-xs text-gray-400 whitespace-nowrap">${fmtTs(e.created_at)}</span>
+                  <span class="text-xs text-[#656D76] whitespace-nowrap">${fmtTs(e.created_at)}</span>
                 </div>
               `).join('')}
-            </div>` : '<div class="text-sm text-gray-400">No events yet.</div>'}
+            </div>` : '<div class="text-sm text-[#8B949E]">No events yet.</div>'}
           </div>
         `;
       } catch (err) {
-        el.innerHTML = `<div class="text-red-500 text-sm">${err.message}</div>`;
+        el.innerHTML = `<div class="text-[#F85149] text-sm">${err.message}</div>`;
       }
     }
 
@@ -414,10 +452,10 @@
           body: JSON.stringify(body),
         });
         statusEl.textContent = 'Saved. Changes take effect on the user\'s next app launch.';
-        statusEl.className = 'text-xs text-green-600 ml-3';
+        statusEl.style.color = '#3FB950';
       } catch (err) {
         statusEl.textContent = `Error: ${err.message}`;
-        statusEl.className = 'text-xs text-red-500 ml-3';
+        statusEl.style.color = '#F85149';
       }
     }
 
@@ -470,7 +508,7 @@
         statusBreakdown.innerHTML = statuses.map(s => `
           <div class="px-4 py-3 flex justify-between items-center">
             ${badge(s)}
-            <span class="font-semibold text-gray-700">${stats['status_' + s] ?? 0}</span>
+            <span class="font-semibold text-[#E6EDF3]">${stats['status_' + s] ?? 0}</span>
           </div>
         `).join('');
 
@@ -479,12 +517,12 @@
         tierBreakdown.innerHTML = tiers.map(t => `
           <div class="px-4 py-3 flex justify-between items-center">
             ${badge(t)}
-            <span class="font-semibold text-gray-700">${stats['tier_' + t] ?? 0}</span>
+            <span class="font-semibold text-[#E6EDF3]">${stats['tier_' + t] ?? 0}</span>
           </div>
         `).join('');
       } catch (err) {
         document.getElementById('funnel').innerHTML =
-          `<div class="text-red-500 text-sm col-span-7">${err.message}</div>`;
+          `<div class="text-[#F85149] text-sm col-span-7">${err.message}</div>`;
       }
     }
 

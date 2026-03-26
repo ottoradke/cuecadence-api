@@ -34,6 +34,12 @@ export interface KeyRecord {
   mac_device_id:      string | null;
   last_validated_at:  number | null;
   created_at:         number;
+  // Optional lead capture fields
+  first_name:         string | null;
+  last_name:          string | null;
+  company:            string | null;
+  role:               string | null;
+  tools:              string | null;
 }
 
 export type KeyEventType =
@@ -61,7 +67,12 @@ export interface KeyEvent {
 // ── API request/response types ────────────────────────────────────────────────
 
 export interface RequestTrialBody {
-  email: string;
+  email:      string;
+  firstName?: string;
+  lastName?:  string;
+  company?:   string;
+  role?:      string;
+  tools?:     string;
 }
 
 export interface VerifyBody {

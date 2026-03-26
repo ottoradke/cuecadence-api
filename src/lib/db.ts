@@ -40,15 +40,18 @@ export async function insertKey(
       verify_token, verify_token_exp,
       requested_at, verified_at, activated_at,
       expires_at, windows_device_id, mac_device_id,
-      last_validated_at, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      last_validated_at, created_at,
+      first_name, last_name, company, role, tools
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     record.key, record.key_hash, record.email_hash,
     record.status, record.tier,
     record.verify_token, record.verify_token_exp,
     record.requested_at, record.verified_at, record.activated_at,
     record.expires_at, record.windows_device_id, record.mac_device_id,
-    record.last_validated_at, record.created_at
+    record.last_validated_at, record.created_at,
+    record.first_name ?? null, record.last_name ?? null,
+    record.company ?? null, record.role ?? null, record.tools ?? null
   ).run();
 }
 
