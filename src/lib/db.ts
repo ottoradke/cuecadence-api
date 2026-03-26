@@ -155,7 +155,7 @@ export async function getKeyEvents(
   keyHash: string
 ): Promise<KeyEvent[]> {
   const result = await db.prepare(
-    'SELECT * FROM key_events WHERE key_hash = ? ORDER BY created_at ASC'
+    'SELECT * FROM key_events WHERE key_hash = ? ORDER BY created_at DESC'
   ).bind(keyHash).all<KeyEvent>();
   return result.results;
 }
