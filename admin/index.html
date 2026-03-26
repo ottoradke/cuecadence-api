@@ -281,13 +281,29 @@
 
         const eventsEl = document.getElementById('recent-events');
         if (stats.recent_events && stats.recent_events.length) {
-          eventsEl.innerHTML = stats.recent_events.map(e => `
-            <div class="px-4 py-3 flex items-center gap-3">
-              ${eventBadge(e.event)}
-              <span class="font-mono text-xs text-[#8B949E]">${e.key_hash ? e.key_hash.slice(0,12) + '…' : ''}</span>
-              <span class="text-xs text-[#656D76] ml-auto">${fmtTs(e.created_at)}</span>
-            </div>
-          `).join('');
+          eventsEl.innerHTML = stats.recent_events.map(e => {
+            const name    = [e.first_name, e.last_name].filter(Boolean).join(' ');
+            const company = e.company || '';
+            const who     = name && company ? `${name} · ${company}`
+                          : name            ? name
+                          : company         ? company
+                          : e.key_hash      ? e.key_hash.slice(0, 12) + '…'
+                          : '';
+            return `
+              <div class="px-4 py-3 flex items-start gap-3">
+                <div class="pt-0.5">${eventBadge(e.event)}</div>
+                <div class="flex-1 min-w-0">
+                  ${who ? `<div class="text-sm text-[#E6EDF3] truncate">${who}</div>` : ''}
+                  <div class="flex items-center gap-2 mt-0.5">
+                    ${e.tier  ? `${badge(e.tier)}`  : ''}
+                    ${e.platform ? `<span class="text-xs text-[#656D76]">${e.platform}</span>` : ''}
+                    <span class="font-mono text-xs text-[#30363D]">${e.key_hash ? e.key_hash.slice(0,8) : ''}</span>
+                  </div>
+                </div>
+                <span class="text-xs text-[#656D76] whitespace-nowrap pt-0.5">${fmtTs(e.created_at)}</span>
+              </div>
+            `;
+          }).join('');
         } else {
           eventsEl.innerHTML = '<div class="p-4 text-sm text-[#8B949E]">No recent activity.</div>';
         }

@@ -41,7 +41,13 @@ export async function handleAdminStats(
     `).bind(now, in7Days).first<{ count: number }>(),
 
     env.DB.prepare(`
-      SELECT * FROM key_events WHERE created_at > ? ORDER BY created_at DESC LIMIT 20
+      SELECT
+        ke.id, ke.key_hash, ke.event, ke.device_id, ke.platform, ke.metadata, ke.created_at,
+        k.first_name, k.last_name, k.company, k.role, k.tier, k.status
+      FROM key_events ke
+      LEFT JOIN keys k ON ke.key_hash = k.key_hash
+      WHERE ke.created_at > ?
+      ORDER BY ke.created_at DESC LIMIT 20
     `).bind(ago7Days).all(),
   ]);
 
