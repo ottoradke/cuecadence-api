@@ -71,14 +71,16 @@
 <body class="min-h-screen font-sans">
 
   <!-- Nav -->
-  <nav style="background:#161B22; border-bottom:1px solid #30363D;" class="px-6 py-3 flex items-center justify-between">
-    <div class="flex items-center gap-6">
-      <span class="font-bold text-[#58A6FF] text-lg">CueCadence <span class="font-normal text-[#8B949E] text-sm">Admin</span></span>
-      <a href="#" onclick="showView('dashboard')" class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Dashboard</a>
-      <a href="#" onclick="showView('keys')"      class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Keys</a>
-      <a href="#" onclick="showView('stats')"     class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Stats</a>
+  <nav style="background:#161B22; border-bottom:1px solid #30363D;">
+    <div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-6">
+        <span class="font-bold text-[#58A6FF] text-lg">CueCadence <span class="font-normal text-[#8B949E] text-sm">Admin</span></span>
+        <a href="#" onclick="showView('dashboard')" class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Dashboard</a>
+        <a href="#" onclick="showView('keys')"      class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Keys</a>
+        <a href="#" onclick="showView('stats')"     class="text-sm text-[#8B949E] hover:text-[#E6EDF3]">Stats</a>
+      </div>
+      <span id="nav-status" class="text-xs text-[#656D76]">Connecting…</span>
     </div>
-    <span id="nav-status" class="text-xs text-[#656D76]">Connecting…</span>
   </nav>
 
   <!-- Views -->
