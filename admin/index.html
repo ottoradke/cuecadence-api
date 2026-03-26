@@ -237,7 +237,7 @@
   <script>
     const API = 'https://api.cuecadence.io';
     let allKeys = [];
-    let sortCol = 'requested_at';
+    let sortCol = '';
     let sortDir = -1; // -1 = desc, 1 = asc
 
     // ── View routing ──────────────────────────────────────────────────────────
@@ -557,20 +557,25 @@
             <h3 class="font-semibold text-[#E6EDF3] mb-4">Event Timeline</h3>
             ${events.length ? `
             <div class="divider-y">
-              ${events.map(e => `
+              ${events.map(e => {
+                const meta = e.metadata ? JSON.parse(e.metadata) : null;
+                const isDuplicate = e.event === 'key_requested' && meta?.duplicate;
+                return `
                 <div class="py-3 flex items-start gap-3">
-                  ${eventBadge(e.event)}
+                  ${isDuplicate
+                    ? `<span class="event-key_requested text-xs font-mono font-semibold px-2 py-0.5 rounded">key_requested <span style="opacity:0.7;">· duplicate</span></span>`
+                    : eventBadge(e.event)}
                   <div class="flex-1 min-w-0">
                     ${e.platform ? `<span class="text-xs text-[#8B949E]">${e.platform}</span>` : ''}
-                    ${e.metadata ? `
+                    ${meta && !isDuplicate ? `
                     <details class="mt-1">
                       <summary class="text-xs text-[#8B949E] cursor-pointer">metadata</summary>
-                      <pre class="text-xs mt-1 overflow-x-auto">${JSON.stringify(JSON.parse(e.metadata), null, 2)}</pre>
+                      <pre class="text-xs mt-1 overflow-x-auto">${JSON.stringify(meta, null, 2)}</pre>
                     </details>` : ''}
                   </div>
                   <span class="text-xs text-[#656D76] whitespace-nowrap">${fmtTs(e.created_at)}</span>
-                </div>
-              `).join('')}
+                </div>`;
+              }).join('')}
             </div>` : '<div class="text-sm text-[#8B949E]">No events yet.</div>'}
           </div>
         `;
