@@ -207,6 +207,34 @@ this same repo. Served at `admin.cuecadence.io`, gated by Cloudflare Access
 Communicates with the Worker via `/admin/*` endpoints using fetch(). All admin
 actions are logged to `admin_sessions` in D1.
 
+### Cloudflare Pages setup — important gotchas
+
+The Worker (`cuecadence-api`) and the Pages site (`cuecadence-admin`) are **two
+separate projects** in Cloudflare, even though they live in the same repo.
+
+- The Worker auto-deploys via `wrangler.toml` on every push to `main`.
+- The Pages site is the `cuecadence-admin` Pages project, connected to this
+  repo's `main` branch with **no build command** and build output directory
+  set to `admin`.
+
+**Do not use the "Create a Worker" flow** in the Cloudflare dashboard to set up
+Pages — it will detect `wrangler.toml` and deploy a duplicate Worker instead.
+Use **Create application → Pages → Connect to Git** (the separate Pages flow).
+
+**Build settings for `cuecadence-admin`:**
+| Field | Value |
+|---|---|
+| Framework preset | None |
+| Build command | *(empty)* |
+| Build output directory | `admin` |
+
+If the build command is left as `npx wrangler deploy` (the auto-filled default),
+Cloudflare will deploy a Worker named `cuecadence-admin` instead of serving the
+static HTML file. Clear it.
+
+`pages.toml` in the repo root sets `pages_build_output_dir = "admin"` as a
+hint, but the build command field in the dashboard must still be cleared manually.
+
 ---
 
 ## Local dev workflow
@@ -233,16 +261,22 @@ npm run deploy
 
 ## Deployment
 
+**Worker** — deploys automatically on every push to `main` via Cloudflare's
+Git integration (configured in the `cuecadence-api` Workers project).
+
 ```bash
-npm run deploy
+npm run deploy   # manual deploy if needed
 ```
 
-This runs `wrangler deploy`, which bundles the Worker TypeScript and pushes it
-to Cloudflare. The D1 database is not affected by deploys — schema changes
-require running migration files manually (see D1 section above).
+**Admin dashboard** — deploys automatically on every push to `main` via the
+`cuecadence-admin` Pages project's Git integration.
 
-The admin dashboard (`admin/index.html`) is deployed separately via Cloudflare
-Pages, connected to this repo's `main` branch in the Cloudflare dashboard.
+The D1 database is not affected by either deploy — schema changes require
+running migration files manually:
+
+```bash
+npx wrangler d1 execute cuecadence-keys --file=migrations/<file>.sql
+```
 
 ---
 
