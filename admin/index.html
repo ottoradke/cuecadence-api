@@ -849,17 +849,22 @@ async function renderDetail(keyHash) {
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          ${k.first_name || k.company ? `
           <div class="card" style="padding:20px 24px">
-            <div style="font-size:10px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:14px">User Info</div>
-            <div style="display:grid;gap:8px">
-              ${k.first_name ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Name</span> ${k.first_name} ${k.last_name||''}</div>` : ''}
-              ${k.company ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Company</span> ${k.company}</div>` : ''}
-              ${k.role ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Role</span> ${k.role}</div>` : ''}
-              ${k.email ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Email</span> <span class="mono" style="font-size:12px">${k.email}</span></div>` : ''}
-              ${k.tools ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Tools</span> <span style="color:var(--text-muted)">${k.tools}</span></div>` : ''}
-            </div>
-          </div>` : '<div></div>'}
+            ${(() => {
+              const isGenerated = !k.first_name && !k.last_name && !k.email && !k.company && !k.role && !k.tools;
+              return `<div style="font-size:10px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+                User Info
+                ${isGenerated ? '<span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(139,148,158,.12);color:var(--text-dim);letter-spacing:.06em">Generated key</span>' : ''}
+              </div>
+              <div style="display:grid;gap:8px">
+                <div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Name</span> ${k.first_name ? `${k.first_name} ${k.last_name||''}` : '<span style="color:var(--text-dim)">—</span>'}</div>
+                <div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Email</span> ${k.email ? `<span class="mono" style="font-size:12px">${k.email}</span>` : '<span style="color:var(--text-dim)">—</span>'}</div>
+                <div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Company</span> ${k.company || '<span style="color:var(--text-dim)">—</span>'}</div>
+                <div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Role</span> ${k.role || '<span style="color:var(--text-dim)">—</span>'}</div>
+                ${k.tools ? `<div style="font-size:13px"><span style="color:var(--text-dim);width:70px;display:inline-block">Tools</span> <span style="color:var(--text-muted)">${k.tools}</span></div>` : ''}
+              </div>`;
+            })()}
+          </div>
           <div class="card" style="padding:20px 24px">
             <div style="font-size:10px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:14px">Key Status</div>
             <div style="font-size:28px;font-family:'DM Serif Display',serif;font-weight:400;color:${remColor};margin-bottom:8px">${rem}</div>
