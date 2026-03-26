@@ -43,7 +43,7 @@ export async function handleAdminStats(
     env.DB.prepare(`
       SELECT
         ke.id, ke.key_hash, ke.event, ke.device_id, ke.platform, ke.metadata, ke.created_at,
-        k.first_name, k.last_name, k.company, k.role, k.tier, k.status
+        k.key, k.first_name, k.last_name, k.company, k.role, k.tier, k.status
       FROM key_events ke
       LEFT JOIN keys k ON ke.key_hash = k.key_hash
       WHERE ke.created_at > ?

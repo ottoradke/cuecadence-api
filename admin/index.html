@@ -227,10 +227,13 @@
         <h1 style="font-size:22px;font-family:'DM Serif Display',serif;font-weight:400;margin:0;">Dashboard</h1>
         <p style="font-size:13px;color:var(--text-muted);margin:4px 0 0;">Live overview of license activity</p>
       </div>
-      <button class="btn btn-outline" onclick="refreshDashboard()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-        Refresh
-      </button>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="last-refreshed" style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace;"></span>
+        <button class="btn btn-outline" onclick="refreshDashboard()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
     </div>
 
     <div id="stat-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;"></div>
@@ -266,7 +269,7 @@
       <div style="overflow-x:auto;">
         <table id="activity-table">
           <thead>
-            <tr><th>Event</th><th>Name</th><th>Company</th><th>Tier</th><th>Platform</th><th>Key</th><th>Time</th></tr>
+            <tr><th>Event</th><th>Name</th><th>Company</th><th>Tier</th><th>Key</th><th>Time</th></tr>
           </thead>
           <tbody id="activity-body"></tbody>
         </table>
@@ -490,6 +493,8 @@ async function renderDashboard() {
     allActivityEvents = data.recent_events || [];
     renderActivityPills();
     applyActivityFilters();
+    const el = document.getElementById('last-refreshed');
+    if (el) el.textContent = 'Refreshed ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   } catch (err) {
     document.getElementById('stat-cards').innerHTML =
       `<div style="grid-column:1/-1;color:var(--red);font-size:13px;">Failed to load: ${err.message}</div>`;
@@ -578,15 +583,21 @@ function applyActivityFilters() {
   renderActivityTable(filtered);
 }
 
+function navigateToUsersFiltered(status, tier) {
+  document.getElementById('user-status-filter').value = status || '';
+  document.getElementById('user-tier-filter').value   = tier   || '';
+  navigate('users');
+}
+
 function renderStatCards(data) {
   const cards = [
-    { label: 'Total Keys', value: data.total_keys, sub: `+${data.new_last_7_days} this week`, icon: '⊕', color: 'var(--accent)' },
-    { label: 'Active Trials', value: data.active_trials, sub: 'currently running', icon: '◎', color: 'var(--green)' },
-    { label: 'Expiring (7d)', value: data.expiring_7d, sub: 'need attention', icon: '◷', color: 'var(--yellow)' },
-    { label: 'Paid Keys', value: data.paid_keys, sub: 'converted from trial', icon: '★', color: 'var(--purple)' },
+    { label: 'Total Keys',    value: data.total_keys,   sub: `+${data.new_last_7_days} this week`, icon: '⊕', color: 'var(--accent)',  onclick: null },
+    { label: 'Active Trials', value: data.active_trials, sub: 'currently running',                  icon: '◎', color: 'var(--green)',   onclick: "navigateToUsersFiltered('active','trial')" },
+    { label: 'Expiring (7d)', value: data.expiring_7d,  sub: 'need attention',                      icon: '◷', color: 'var(--yellow)',  onclick: "navigateToUsersFiltered('active','')" },
+    { label: 'Paid Keys',     value: data.paid_keys,    sub: 'converted from trial',                icon: '★', color: 'var(--purple)', onclick: null },
   ];
   document.getElementById('stat-cards').innerHTML = cards.map(c => `
-    <div class="stat-card">
+    <div class="stat-card" ${c.onclick ? `onclick="${c.onclick}" style="cursor:pointer"` : ''}>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;">
         <div style="font-size:10px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace">${c.label}</div>
         <div style="font-size:16px;color:${c.color};opacity:.6">${c.icon}</div>
@@ -600,7 +611,7 @@ function renderStatCards(data) {
 function renderActivityTable(events) {
   const tbody = document.getElementById('activity-body');
   if (!events || !events.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:32px">No recent activity</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:32px">No recent activity</td></tr>';
     return;
   }
   tbody.innerHTML = events.map(e => {
@@ -608,16 +619,23 @@ function renderActivityTable(events) {
     const meta = typeof e.metadata === 'string' ? (() => { try { return JSON.parse(e.metadata); } catch { return null; } })() : e.metadata;
     const isDupe = e.event === 'key_requested' && meta?.duplicate;
     const rowStyle = isDupe ? 'background:rgba(212,168,75,.04);' : '';
-    const eventCell = isDupe
+    const platSuffix = e.platform === 'windows'
+      ? ' <span style="font-size:10px;color:var(--text-dim)" title="Windows">⊞</span>'
+      : e.platform === 'mac'
+      ? ' <span style="font-size:10px;color:var(--text-dim)" title="Mac">⌘</span>'
+      : '';
+    const eventCell = (isDupe
       ? `${eventBadge(e.event)} <span title="Duplicate request" style="font-size:11px;color:var(--yellow);">⚠</span>`
-      : eventBadge(e.event);
+      : eventBadge(e.event)) + platSuffix;
+    const keyDisplay = e.key
+      ? `<span class="mono" style="font-size:11px;color:var(--text-muted)">${e.key}</span>`
+      : shortKey(e.key_hash);
     return `<tr onclick="navigate('detail','${e.key_hash}')" style="${rowStyle}">
       <td>${eventCell}</td>
       <td style="font-weight:500">${name}</td>
       <td style="color:var(--text-muted)">${e.company||'—'}</td>
       <td>${e.tier ? tierBadge(e.tier) : '—'}</td>
-      <td>${platformIcon(e.platform)}</td>
-      <td>${shortKey(e.key_hash)}</td>
+      <td>${keyDisplay}</td>
       <td style="color:var(--text-muted);font-size:12px">${fmtTime(e.created_at)}</td>
     </tr>`;
   }).join('');
