@@ -30,6 +30,25 @@
     .event-key_revoked      { background:#3A1A1A; color:#F85149; }
     .event-device_reset     { background:#2D1F00; color:#D29922; }
     .event-validation_failed{ background:#3A1A1A; color:#F85149; }
+    /* Modal */
+    #modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+    #modal-overlay.active { display: flex; }
+    #modal-box {
+      background: #161B22;
+      border: 1px solid #30363D;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+    }
     /* Form controls */
     input, select {
       background: #21262D;
@@ -183,6 +202,25 @@
     </div>
 
   </main>
+
+  <!-- Modal -->
+  <div id="modal-overlay">
+    <div id="modal-box">
+      <div id="modal-title" style="font-size:1.125rem; font-weight:600; color:#E6EDF3; margin-bottom:0.5rem;"></div>
+      <div id="modal-body" style="font-size:0.875rem; color:#8B949E; margin-bottom:1.5rem; line-height:1.5;"></div>
+      <div style="display:flex; justify-content:flex-end; gap:0.75rem;">
+        <button id="modal-cancel"
+          style="background:transparent; border:1px solid #30363D; color:#8B949E; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer;"
+          onmouseover="this.style.borderColor='#8B949E'" onmouseout="this.style.borderColor='#30363D'">
+          Cancel
+        </button>
+        <button id="modal-confirm"
+          style="border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer; font-weight:600;">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API = 'https://api.cuecadence.io';
@@ -459,29 +497,41 @@
       }
     }
 
-    async function confirmRevoke(keyHash) {
-      if (!confirm('Revoke this key? The user will be locked out on their next app launch.')) return;
-      try {
-        await apiFetch(`/admin/keys/${keyHash}/revoke`, { method: 'POST' });
-        alert('Key revoked. Reloading…');
-        loadKeyDetail(keyHash);
-      } catch (err) {
-        alert(`Error: ${err.message}`);
-      }
+    function confirmRevoke(keyHash) {
+      showModal({
+        title: 'Revoke Key',
+        body: 'The user will be locked out on their next app launch. This cannot be undone.',
+        confirmLabel: 'Revoke',
+        confirmStyle: 'background:#B91C1C; color:#fff; border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer; font-weight:600;',
+        onConfirm: async () => {
+          try {
+            await apiFetch(`/admin/keys/${keyHash}/revoke`, { method: 'POST' });
+            loadKeyDetail(keyHash);
+          } catch (err) {
+            showModal({ title: 'Error', body: err.message, confirmLabel: 'OK', confirmStyle: 'background:#1F6FEB; color:#fff; border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer; font-weight:600;', onConfirm: () => {} });
+          }
+        },
+      });
     }
 
-    async function resetDevice(keyHash, platform) {
-      if (!confirm(`Reset the ${platform} device slot? The user can re-activate on a new ${platform} machine.`)) return;
-      try {
-        await apiFetch(`/admin/keys/${keyHash}/reset-device`, {
-          method: 'POST',
-          body: JSON.stringify({ platform }),
-        });
-        alert('Device slot cleared. Reloading…');
-        loadKeyDetail(keyHash);
-      } catch (err) {
-        alert(`Error: ${err.message}`);
-      }
+    function resetDevice(keyHash, platform) {
+      showModal({
+        title: `Reset ${platform.charAt(0).toUpperCase() + platform.slice(1)} Device`,
+        body: `The ${platform} device slot will be cleared. The user can re-activate on a new ${platform} machine.`,
+        confirmLabel: 'Reset Device',
+        confirmStyle: 'background:#9A3412; color:#fff; border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer; font-weight:600;',
+        onConfirm: async () => {
+          try {
+            await apiFetch(`/admin/keys/${keyHash}/reset-device`, {
+              method: 'POST',
+              body: JSON.stringify({ platform }),
+            });
+            loadKeyDetail(keyHash);
+          } catch (err) {
+            showModal({ title: 'Error', body: err.message, confirmLabel: 'OK', confirmStyle: 'background:#1F6FEB; color:#fff; border:none; border-radius:0.375rem; padding:0.5rem 1rem; font-size:0.875rem; cursor:pointer; font-weight:600;', onConfirm: () => {} });
+          }
+        },
+      });
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────────
@@ -524,6 +574,30 @@
         document.getElementById('funnel').innerHTML =
           `<div class="text-[#F85149] text-sm col-span-7">${err.message}</div>`;
       }
+    }
+
+    // ── Modal ─────────────────────────────────────────────────────────────────
+
+    function showModal({ title, body, confirmLabel, confirmStyle, onConfirm }) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-body').textContent  = body;
+      const confirmBtn = document.getElementById('modal-confirm');
+      confirmBtn.textContent = confirmLabel;
+      confirmBtn.style.cssText = confirmStyle;
+      document.getElementById('modal-overlay').classList.add('active');
+
+      const overlay = document.getElementById('modal-overlay');
+      const cancel  = document.getElementById('modal-cancel');
+
+      function close() {
+        overlay.classList.remove('active');
+        confirmBtn.replaceWith(confirmBtn.cloneNode(true)); // remove old listeners
+        cancel.replaceWith(cancel.cloneNode(true));
+      }
+
+      document.getElementById('modal-confirm').addEventListener('click', () => { close(); onConfirm(); }, { once: true });
+      document.getElementById('modal-cancel').addEventListener('click', close, { once: true });
+      overlay.addEventListener('click', e => { if (e.target === overlay) close(); }, { once: true });
     }
 
     // ── Init ──────────────────────────────────────────────────────────────────
