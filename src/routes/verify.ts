@@ -46,7 +46,7 @@ export async function handleVerify(
   }
 
   // ── Activate key — trial clock starts at verification ───────────────────────
-  const TRIAL_DURATION = 60 * 60 * 24 * 14; // 14 days
+  const TRIAL_DURATION = 60 * 60 * 24 * 7; // 7 days
   const expiresAt = now + TRIAL_DURATION;
   await activateKey(env.DB, record.key_hash, expiresAt);
 
