@@ -339,7 +339,7 @@
       <h1 style="font-size:22px;font-family:'DM Serif Display',serif;font-weight:400;margin:0;">Stats</h1>
       <p style="font-size:13px;color:var(--text-muted);margin:4px 0 0;">Conversion funnel &amp; breakdowns</p>
     </div>
-    <div id="stats-content" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;"></div>
+    <div id="stats-content" style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;"></div>
   </div>
 
 </main>
@@ -1254,16 +1254,26 @@ function upgradeTier(keyHash, tier) {
 // ─────────────────────────────────────────
 // STATS VIEW
 // ─────────────────────────────────────────
+
+function sectionLabel(text) {
+  return `<div style="font-size:10px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);font-family:'DM Mono',monospace;margin-bottom:16px">${text}</div>`;
+}
+
 async function renderStats() {
   try {
-    const data = await apiFetch('/admin/stats');
+    const data  = await apiFetch('/admin/stats');
     const total = data.total_keys;
+
+    // ── Funnel ───────────────────────────────────────────────────────────────
     const funnelSteps = [
       { label: 'Requested', value: total,               pct: 100 },
       { label: 'Verified',  value: data.verified_keys,  pct: total ? Math.round(data.verified_keys/total*100)  : 0 },
       { label: 'Activated', value: data.activated_keys, pct: total ? Math.round(data.activated_keys/total*100) : 0 },
       { label: 'Paid',      value: data.paid_keys,      pct: total ? Math.round(data.paid_keys/total*100)      : 0 },
     ];
+    const overallConvPct = total ? Math.round(data.paid_keys / total * 100) : 0;
+
+    // ── Status / Tier breakdowns ─────────────────────────────────────────────
     const statusBreakdown = [
       { label: 'Active',   value: data.status_active,               badge: 'badge-green'  },
       { label: 'Pending',  value: data.status_pending_verification, badge: 'badge-yellow' },
@@ -1276,9 +1286,54 @@ async function renderStats() {
       { label: 'Standard', value: data.tier_standard, badge: 'badge-purple' },
       { label: 'Pro',      value: data.tier_pro,      badge: 'badge-yellow' },
     ];
+
+    // ── Weekly signups chart ─────────────────────────────────────────────────
+    const weekCounts = new Array(8).fill(0);
+    (data.weekly_signups || []).forEach(w => {
+      const idx = Math.min(7, Math.max(0, w.week_idx));
+      weekCounts[idx] += w.count;
+    });
+    const base = data.weeks_ago_8_epoch || (Math.floor(Date.now()/1000) - 8*7*86400);
+    const weekLabels = weekCounts.map((_, i) => {
+      const d = new Date((base + i * 7 * 86400) * 1000);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    });
+    const maxWeek = Math.max(...weekCounts, 1);
+    const weeklyTotal = weekCounts.reduce((a, b) => a + b, 0);
+
+    // ── Expiring soon ────────────────────────────────────────────────────────
+    const expRows = [
+      { label: 'Today',     value: data.expiring_today, color: data.expiring_today > 0 ? 'var(--red)'    : 'var(--text-dim)' },
+      { label: 'In 3 days', value: data.expiring_3d,    color: data.expiring_3d    > 0 ? 'var(--yellow)' : 'var(--text-dim)' },
+      { label: 'In 7 days', value: data.expiring_7d,    color: data.expiring_7d    > 0 ? 'var(--yellow)' : 'var(--text-dim)' },
+    ];
+
+    // ── Key metrics ──────────────────────────────────────────────────────────
+    const avgDays = data.avg_trial_days != null ? data.avg_trial_days.toFixed(1) : '—';
+    const minDays = data.min_trial_days != null ? Math.round(data.min_trial_days) : '—';
+    const maxDays = data.max_trial_days != null ? Math.round(data.max_trial_days) : '—';
+    const activationRate = total ? Math.round(data.activated_keys / total * 100) : 0;
+
+    // ── Admin actions ────────────────────────────────────────────────────────
+    const adminActions = [
+      { label: 'Extensions',      value: data.admin_extensions     },
+      { label: 'Tier Changes',    value: data.admin_tier_changes   },
+      { label: 'Revocations',     value: data.admin_revocations    },
+      { label: 'Device Resets',   value: data.admin_device_resets  },
+      { label: 'Manual Verifies', value: data.admin_manual_verifies },
+    ];
+
     document.getElementById('stats-content').innerHTML = `
+
+      <!-- Conversion Funnel (full width) -->
       <div class="card" style="padding:20px 24px;grid-column:1/-1">
-        <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);margin-bottom:20px;font-family:'DM Mono',monospace">Conversion Funnel</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px">
+          ${sectionLabel('Conversion Funnel')}
+          <div style="text-align:right">
+            <div style="font-size:36px;font-family:'DM Serif Display',serif;color:var(--green);line-height:1">${overallConvPct}%</div>
+            <div style="font-size:10px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-top:2px">Requested → Paid</div>
+          </div>
+        </div>
         <div style="display:grid;gap:14px">
           ${funnelSteps.map((s, i) => `
             <div>
@@ -1292,23 +1347,103 @@ async function renderStats() {
               <div style="background:var(--bg);border-radius:5px;overflow:hidden;height:8px">
                 <div class="funnel-bar" style="width:${s.pct}%;background:var(--green)"></div>
               </div>
-              ${i < funnelSteps.length-1 ? `<div style="font-size:10px;color:var(--text-dim);margin-top:4px;text-align:right;font-family:'DM Mono',monospace">→ ${funnelSteps[i+1].value > 0 ? Math.round(funnelSteps[i+1].value/s.value*100) : 0}% conversion to ${funnelSteps[i+1].label}</div>` : ''}
+              ${i < funnelSteps.length-1 ? `<div style="font-size:10px;color:var(--text-dim);margin-top:4px;text-align:right;font-family:'DM Mono',monospace">→ ${funnelSteps[i+1].value > 0 && s.value > 0 ? Math.round(funnelSteps[i+1].value/s.value*100) : 0}% conversion to ${funnelSteps[i+1].label}</div>` : ''}
             </div>
           `).join('')}
         </div>
       </div>
+
+      <!-- Status Breakdown -->
       <div class="card" style="padding:20px 24px">
-        <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;font-family:'DM Mono',monospace">Status Breakdown</div>
+        ${sectionLabel('Status Breakdown')}
         <div style="display:grid;gap:10px">
           ${statusBreakdown.map(s => `<div style="display:flex;align-items:center;justify-content:space-between"><span class="badge ${s.badge}">${s.label}</span><span style="font-size:22px;font-family:'DM Serif Display',serif">${s.value}</span></div>`).join('')}
         </div>
       </div>
+
+      <!-- Tier Breakdown -->
       <div class="card" style="padding:20px 24px">
-        <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;font-family:'DM Mono',monospace">Tier Breakdown</div>
+        ${sectionLabel('Tier Breakdown')}
         <div style="display:grid;gap:10px">
           ${tierBreakdown.map(t => `<div style="display:flex;align-items:center;justify-content:space-between"><span class="badge ${t.badge}">${t.label}</span><span style="font-size:22px;font-family:'DM Serif Display',serif">${t.value}</span></div>`).join('')}
         </div>
       </div>
+
+      <!-- Weekly Signups Chart -->
+      <div class="card" style="padding:20px 24px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+          ${sectionLabel('Weekly Signups')}
+          <span style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace">${weeklyTotal} total</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:72px;">
+          ${weekCounts.map((count, i) => `
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%">
+              <div style="font-size:9px;color:var(--text-dim);font-family:'DM Mono',monospace;visibility:${count?'visible':'hidden'}">${count}</div>
+              <div style="flex:1;width:100%;display:flex;align-items:flex-end">
+                <div style="width:100%;background:var(--accent);border-radius:2px 2px 0 0;height:${count ? Math.max(3, Math.round(count/maxWeek*48)) : 0}px;opacity:.8"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:4px;margin-top:6px;padding-bottom:4px;overflow:hidden">
+          ${weekLabels.map(l => `<div style="flex:1;font-size:8px;color:var(--text-dim);font-family:'DM Mono',monospace;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l}</div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Platform Breakdown -->
+      <div class="card" style="padding:20px 24px">
+        ${sectionLabel('Platform Breakdown')}
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">⊞ Windows only</span><span style="font-size:22px;font-family:'DM Serif Display',serif">${data.platform_windows_only}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">⌘ Mac only</span><span style="font-size:22px;font-family:'DM Serif Display',serif">${data.platform_mac_only}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">⊞⌘ Both</span><span style="font-size:22px;font-family:'DM Serif Display',serif;color:var(--green)">${data.platform_both}</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-dim)">Not activated</span><span style="font-size:22px;font-family:'DM Serif Display',serif;color:var(--text-dim)">${data.platform_not_activated}</span></div>
+        </div>
+      </div>
+
+      <!-- Expiring Soon -->
+      <div class="card" style="padding:20px 24px">
+        ${sectionLabel('Expiring Soon')}
+        <div style="display:grid;gap:10px">
+          ${expRows.map(r => `<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-muted)">${r.label}</span><span style="font-size:22px;font-family:'DM Serif Display',serif;color:${r.color}">${r.value}</span></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Key Metrics -->
+      <div class="card" style="padding:20px 24px">
+        ${sectionLabel('Key Metrics')}
+        <div style="display:grid;gap:12px">
+          <div>
+            <div style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:3px">Activation Rate</div>
+            <div style="font-size:28px;font-family:'DM Serif Display',serif;color:var(--accent)">${activationRate}%</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:3px">Avg Trial Length</div>
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:28px;font-family:'DM Serif Display',serif;color:var(--accent)">${avgDays}</span>
+              <span style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace">${minDays !== '—' ? `days (${minDays}–${maxDays})` : 'days'}</span>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-bottom:3px">Duplicate Requests</div>
+            <div style="font-size:28px;font-family:'DM Serif Display',serif;color:${data.duplicate_requests > 0 ? 'var(--yellow)' : 'var(--text-dim)'}">${data.duplicate_requests}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Actions (full width) -->
+      <div class="card" style="padding:20px 24px;grid-column:1/-1">
+        ${sectionLabel('Admin Actions — All Time')}
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px">
+          ${adminActions.map(a => `
+            <div style="text-align:center">
+              <div style="font-size:32px;font-family:'DM Serif Display',serif;color:var(--accent)">${a.value}</div>
+              <div style="font-size:10px;color:var(--text-dim);font-family:'DM Mono',monospace;margin-top:4px;letter-spacing:.06em;text-transform:uppercase">${a.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
     `;
   } catch (err) {
     document.getElementById('stats-content').innerHTML =
