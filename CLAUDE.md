@@ -198,6 +198,17 @@ no awareness of offline state — it just responds or doesn't.
 
 ---
 
+## Admin dashboard layout conventions
+
+All views must follow the same top-level spacing pattern inside `<main class="max-w-6xl mx-auto px-6 py-8">`:
+
+- **Full pages** (Dashboard, Users, Stats) — start with `<h1 class="text-2xl font-bold text-[#E6EDF3] mb-6">Title</h1>`
+- **Detail pages** (User Detail) — start with a back button using `mb-6`, matching the h1 margin of other pages
+
+This keeps the visual rhythm consistent when navigating between views. Do not use `mb-4` on page-level elements.
+
+---
+
 ## Admin dashboard UI conventions
 
 - **No browser dialogs** — never use `confirm()` or `alert()`. Use the `showModal()` helper instead.
