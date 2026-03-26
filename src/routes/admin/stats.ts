@@ -28,6 +28,8 @@ export async function handleAdminStats(
     duplicateRequests,
     adminActions,
     manualVerifies,
+    activeTrialsResult,
+    activePaidResult,
   ] = await Promise.all([
     env.DB.prepare(`SELECT status, COUNT(*) as count FROM keys GROUP BY status`)
       .all<{ status: string; count: number }>(),
@@ -99,6 +101,12 @@ export async function handleAdminStats(
 
     env.DB.prepare(`SELECT COUNT(*) as count FROM key_events WHERE event='email_verified' AND metadata LIKE '%"manual":true%'`)
       .first<{ count: number }>(),
+
+    env.DB.prepare(`SELECT COUNT(*) as count FROM keys WHERE status = 'active' AND tier = 'trial'`)
+      .first<{ count: number }>(),
+
+    env.DB.prepare(`SELECT COUNT(*) as count FROM keys WHERE status = 'active' AND tier IN ('basic','standard','pro')`)
+      .first<{ count: number }>(),
   ]);
 
   // Flatten status and tier arrays into maps for easy lookup
@@ -111,9 +119,9 @@ export async function handleAdminStats(
   return jsonResponseWithCors({
     // Dashboard cards
     total_keys:     totalResult?.count ?? 0,
-    active_trials:  statusMap['active'] ?? 0,
+    active_trials:  activeTrialsResult?.count ?? 0,
     expiring_7d:    expiring7dResult?.count ?? 0,
-    paid_keys:      paidCount,
+    paid_keys:      activePaidResult?.count ?? 0,
     new_last_7_days: (await env.DB.prepare(`SELECT COUNT(*) as count FROM keys WHERE created_at > ?`)
       .bind(ago7Days).first<{ count: number }>())?.count ?? 0,
 
