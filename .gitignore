@@ -1,6 +1,7 @@
 node_modules/
 .wrangler/
 dist/
+package-lock.json
 
 # Local dev secrets — never commit
 .dev.vars
