@@ -32,9 +32,12 @@ export async function handleAdminUpdate(
   if (typeof body.expires_at === 'number') {
     await updateExpiry(env.DB, keyHash, body.expires_at);
 
-    // If the key was expired, reactivate it now that it has a future expiry.
-    if (record.status === 'expired') {
+    // Sync status with the new expiry.
+    if (record.status === 'expired' && body.expires_at > now) {
       await env.DB.prepare("UPDATE keys SET status = 'active' WHERE key_hash = ?")
+        .bind(keyHash).run();
+    } else if (record.status === 'active' && body.expires_at <= now) {
+      await env.DB.prepare("UPDATE keys SET status = 'expired' WHERE key_hash = ?")
         .bind(keyHash).run();
     }
 
