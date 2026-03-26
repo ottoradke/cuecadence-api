@@ -301,6 +301,7 @@
         <option value="standard">Standard</option>
         <option value="pro">Pro</option>
       </select>
+      <button id="user-reset-filters" onclick="resetUserFilters()" style="display:none;font-size:11px;font-family:'DM Mono',monospace;color:var(--text-dim);background:none;border:none;cursor:pointer;padding:0;white-space:nowrap;">✕ reset filters</button>
       <span id="user-count" style="margin-left:auto;font-size:12px;color:var(--text-muted);align-self:center;"></span>
     </div>
     <div class="card" style="overflow:hidden;">
@@ -672,10 +673,20 @@ function sortUsers(col) {
   renderUsersTable();
 }
 
+function resetUserFilters() {
+  document.getElementById('user-search').value = '';
+  document.getElementById('user-status-filter').value = '';
+  document.getElementById('user-tier-filter').value = '';
+  renderUsersTable();
+}
+
 function renderUsersTable() {
   const search = (document.getElementById('user-search').value || '').toLowerCase();
   const sf = document.getElementById('user-status-filter').value;
   const tf = document.getElementById('user-tier-filter').value;
+
+  const resetBtn = document.getElementById('user-reset-filters');
+  if (resetBtn) resetBtn.style.display = (search || sf || tf) ? 'inline' : 'none';
 
   let rows = usersData.filter(k => {
     const name = [k.first_name, k.last_name].filter(Boolean).join(' ').toLowerCase();
