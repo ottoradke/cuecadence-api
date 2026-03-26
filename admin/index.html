@@ -152,15 +152,7 @@
       <div class="card overflow-hidden">
         <table class="w-full text-sm">
           <thead style="background:#21262D; border-bottom:1px solid #30363D;">
-            <tr>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Key</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Name</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Company</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Status</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Tier</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Requested</th>
-              <th class="text-left px-4 py-3 font-semibold text-[#8B949E]">Expires</th>
-            </tr>
+            <tr id="keys-thead-row"></tr>
           </thead>
           <tbody id="keys-tbody">
             <tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">Loading…</td></tr>
@@ -245,6 +237,8 @@
   <script>
     const API = 'https://api.cuecadence.io';
     let allKeys = [];
+    let sortCol = 'requested_at';
+    let sortDir = -1; // -1 = desc, 1 = asc
 
     // ── View routing ──────────────────────────────────────────────────────────
 
@@ -344,22 +338,58 @@
       }
     }
 
+    const keyCols = [
+      { label: 'Name',    field: k => [k.first_name, k.last_name].filter(Boolean).join(' ').toLowerCase() },
+      { label: 'Company', field: k => (k.company || '').toLowerCase() },
+      { label: 'Key',     field: k => k.key },
+      { label: 'Status',  field: k => k.status },
+      { label: 'Tier',    field: k => k.tier },
+      { label: 'Expires', field: k => k.expires_at || 0 },
+    ];
+
+    function renderKeyHeaders() {
+      const colKeys = ['name', 'company', 'key', 'status', 'tier', 'expires_at'];
+      document.getElementById('keys-thead-row').innerHTML = keyCols.map((col, i) => {
+        const colKey = colKeys[i];
+        const active = sortCol === colKey;
+        const arrow  = active ? (sortDir === 1 ? ' ↑' : ' ↓') : ' ↕';
+        return `<th class="text-left px-4 py-3 font-semibold text-[#8B949E] cursor-pointer select-none"
+                    style="${active ? 'color:#E6EDF3;' : ''}"
+                    onclick="setSort('${colKey}')">
+                  ${col.label}<span style="font-size:0.65rem; opacity:0.6;">${arrow}</span>
+                </th>`;
+      }).join('');
+    }
+
+    function setSort(col) {
+      if (sortCol === col) sortDir *= -1;
+      else { sortCol = col; sortDir = 1; }
+      filterKeys();
+    }
+
     function renderKeys(keys) {
+      renderKeyHeaders();
       const tbody = document.getElementById('keys-tbody');
       if (!keys.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-6 text-[#8B949E] text-center">No keys found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-6 text-[#8B949E] text-center">No users found.</td></tr>';
         return;
       }
-      tbody.innerHTML = keys.map((k, i) => `
+      const colKeys = ['name', 'company', 'key', 'status', 'tier', 'expires_at'];
+      const colIdx  = colKeys.indexOf(sortCol);
+      const sorted  = [...keys].sort((a, b) => {
+        const va = colIdx >= 0 ? keyCols[colIdx].field(a) : 0;
+        const vb = colIdx >= 0 ? keyCols[colIdx].field(b) : 0;
+        return va < vb ? -sortDir : va > vb ? sortDir : 0;
+      });
+      tbody.innerHTML = sorted.map((k, i) => `
         <tr style="${i % 2 === 0 ? 'background:#161B22;' : 'background:#0D1117;'} cursor:pointer;"
             onmouseover="this.style.background='#1C2128'" onmouseout="this.style.background='${i % 2 === 0 ? '#161B22' : '#0D1117'}'"
             onclick="showView('key-detail', '${k.key_hash}')">
-          <td class="px-4 py-3 font-mono text-xs text-[#58A6FF]">${k.key}</td>
           <td class="px-4 py-3 text-sm text-[#E6EDF3]">${[k.first_name, k.last_name].filter(Boolean).join(' ') || '—'}</td>
           <td class="px-4 py-3 text-sm text-[#8B949E]">${k.company || '—'}</td>
+          <td class="px-4 py-3 font-mono text-xs text-[#58A6FF]">${k.key}</td>
           <td class="px-4 py-3">${badge(k.status)}</td>
           <td class="px-4 py-3">${badge(k.tier)}</td>
-          <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.requested_at)}</td>
           <td class="px-4 py-3 text-xs text-[#8B949E]">${fmtTs(k.expires_at)}</td>
         </tr>
       `).join('');
@@ -369,7 +399,8 @@
       const search = document.getElementById('keys-search').value.toLowerCase();
       const status = document.getElementById('keys-status-filter').value;
       renderKeys(allKeys.filter(k =>
-        (!search || k.key.toLowerCase().includes(search)) &&
+        (!search || k.key.toLowerCase().includes(search) ||
+          [k.first_name, k.last_name, k.company].filter(Boolean).join(' ').toLowerCase().includes(search)) &&
         (!status || k.status === status)
       ));
     }
