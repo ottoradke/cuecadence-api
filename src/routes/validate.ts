@@ -96,8 +96,12 @@ export async function handleValidate(
   await updateLastValidated(env.DB, payload.key_hash);
 
   return jsonResponseWithCors({
-    valid:      true,
-    tier:       record.tier,
-    expires_at: record.expires_at,
+    valid:       true,
+    tier:        record.tier,
+    expires_at:  record.expires_at,
+    key:         record.key,
+    email:       record.email      ?? null,
+    first_name:  record.first_name ?? null,
+    last_name:   record.last_name  ?? null,
   }, env.CORS_ORIGIN);
 }

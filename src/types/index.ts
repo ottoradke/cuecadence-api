@@ -109,10 +109,14 @@ export interface JwtPayload {
 }
 
 export interface ValidateResponse {
-  valid:      boolean;
-  tier?:      KeyTier;
+  valid:       boolean;
+  tier?:       KeyTier;
   expires_at?: number;
-  error?:     string;
+  key?:        string;
+  email?:      string | null;
+  first_name?: string | null;
+  last_name?:  string | null;
+  error?:      string;
 }
 
 // ── Admin types ───────────────────────────────────────────────────────────────
