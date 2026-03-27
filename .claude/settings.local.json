@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(wrangler pages:*)",
+      "Bash(wrangler d1:*)",
+      "Bash(npm run:*)",
+      "Bash(KH=\"8d31a149def6b758cfca09529ec86660de61ef10c959f787f22a207b40d4744a\")",
+      "Bash(__NEW_LINE_5fb07d96501d6ee6__ echo:*)",
+      "Bash(wrangler deploy:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npx wrangler:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i \"s|import { jsonResponseWithCors } from ''../../lib/cors.js'';|import { jsonResponseWithCors, adminOrigin } from ''../../lib/cors.js'';|g\" \"$f\")",
+      "Bash(sed -i \"s|env\\\\.ADMIN_ORIGIN|adminOrigin\\(request, env\\)|g\" \"$f\")",
+      "Bash(done)",
+      "Bash(grep -n \"adminOrigin\\\\|ADMIN_ORIGIN\" src/routes/admin/*.ts)"
+    ]
+  }
+}
